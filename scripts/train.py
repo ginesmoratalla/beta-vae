@@ -1,45 +1,51 @@
 import torch
 import torch.nn as nn
-
-# Optimization algorithms, e.g., sgd, adam
+from torch.nn import KLDivLoss
 import torch.optim as optim
-import torch.nn.functional as F
+from torchvision import datasets, transforms
+from torchvision.utils import save_image 
+from tqdm import tqdm
 
-from loaders.dataloader import get_data_loaders
+# Project imports
+from loaders.dataloader import get_mnist_loaders
 from models.vae import VariationalAutoEncoder
-
-device = "mps"
 
 # --- Hyperparameters ---
 BETA = 0.1
-num_classes = 18
-lr = 0.001
-num_epochs = 20
-# --- Hyperparameters ---
+Z_DIM = 70
+IMAGE_FLAT_DIM = 64*4*4
+LR = 3e-4
+NUM_EPOCHS = 20
+BATCH_SIZE = 64
+device = "mps"
 
-
-# --- Hyperparameters ---
-train_loader, test_loader = get_data_loaders(batch_size=150)
-model = VariationalAutoEncoder(num_classes=num_classes).to(device)
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(params=model.parameters(), lr=lr)
+# --- Model Setup ---
+model = VariationalAutoEncoder(
+    in_channels=1,
+    z_dim=Z_DIM,
+    flat_dim=IMAGE_FLAT_DIM
+).to(device)
+train_loader, val_loader, test_loader = get_mnist_loaders(batch_size=BATCH_SIZE)
+loss_fn = nn.BCELoss(reduction="sum")
+optimizer = optim.Adam(params=model.parameters(), lr=LR)
 
 
 def train_model():
 
-    n_total_steps = len(train_loader)
-    for epoch in range(num_epochs):
+    n_total_steps = len(train_loader)*NUM_EPOCHS
+    counter = 0
+    for epoch in range(NUM_EPOCHS):
         print(f"[TRAINING] epoch {epoch}")
-        for i, (data, targets) in enumerate(train_loader):
+        loop = tqdm(enumerate(train_loader))
+        for i, (x, _) in loop:
 
-            data = data.float().to(device)
-
-            # data = data.to(device)
-            targets = targets.to(device)
+            x = x.to(device)
 
             # forward pass
-            scores = model(data)
-            loss = criterion(scores, targets)
+            mu, sigma, x_hat = model(x)
+            reconstruction_loss = loss_fn(x_hat, x)
+            kl_div = torch.sum(1 + torch.log(sigma**2) - mu**2 - sigma**2) / 2
+            loss = reconstruction_loss - kl_div
 
             # backward pass
             optimizer.zero_grad()
@@ -47,44 +53,16 @@ def train_model():
 
             # gradient descent
             optimizer.step()
+            loop.set_postfix(loss=loss.item())
 
-            if (i+1) % 10 == 0:
-                print(f"Epoch [{epoch+1}/{num_epochs}], Step [{i+1}/{n_total_steps}], Loss {loss.item():.4f}")
+            if counter % 1000 == 0:
+                print(f"Epoch [{epoch+1}/{NUM_EPOCHS}], Step [{i+1}/{n_total_steps}], Loss {loss.item():.4f}")
+
+            counter += 1
 
     print("Model finished training.\n")
-
-
-def check_accuracy(loader, model, training):
-
-    if training:
-        print("[EVAL] Checking accuracy on training dataset")
-    else:
-        print("[EVAL] Checking accuracy on test dataset")
-
-    num_correct = 0
-    num_samples = 0
-    model.eval()
-
-    with torch.no_grad():
-        for x, y in loader:
-            y = y.to(device)
-            x = x.float().to(device)
-
-            scores = model(x)
-            predictions = torch.argmax(scores, dim=1)
-            num_correct += (predictions == y).sum()
-            num_samples += predictions.size(0)
-
-        print(
-            f"[EVAL] Got correct {
-              num_correct} / {num_samples} --> Accuracy {(float(num_correct)/float(num_samples))*100:.2f}%"
-        )
-        print()
-
-    model.train()
 
 
 if __name__ == "__main__":
     print("[PRE-TRAIN] Training model...")
     train_model()
-    check_accuracy(train_loader, model, training=True)

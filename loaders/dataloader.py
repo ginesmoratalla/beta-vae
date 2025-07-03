@@ -1,39 +1,34 @@
-import torch
-from torch.utils.data import Dataset, DataLoader, TensorDataset
-from sklearn.model_selection import train_test_split
+from torch.utils.data import DataLoader, random_split
+from torchvision import transforms
+import torchvision.datasets as datasets
+
 import numpy as np
 import os
 
 ROOT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
-DATASET_PATH = os.path.join(ROOT_DIR, 'dataset/onepiecedata.pt')
+DATASET_PATH = os.path.join(ROOT_DIR, 'dataset/')
 
 
-class OnePieceDataset(Dataset):
+def get_mnist_loaders(batch_size):
+    """
+    dataset preparation
 
-    def __init__(self):
-        xy = torch.load(DATASET_PATH)
+    NOTE TO SELF: transforms.ToTensor also
+    normalizes the pixel values so they can
+    be displayed and so that sigmoid works
+    """
+    print("[DATA] Loading train dataset")
+    train_dataset = datasets.MNIST(root=DATASET_PATH, train=True, transform=transforms.ToTensor(), download=True)
+    print("[DATA] Loading test dataset")
+    test_dataset = datasets.MNIST(root=DATASET_PATH, train=False, transform=transforms.ToTensor(), download=True)
+    train_size = int(len(train_dataset) * 0.6)
+    val_size = len(train_dataset) - train_size
 
-        # Images saved in tuples, stacking adds a new dimension as 'batch'
-        self.x = torch.stack([tuple[0] for tuple in xy])
-        self.y = [tuple[1] for tuple in xy]
-        self.num_samples = self.x.shape[0]
-        # print(self.x.shape)
+    print("[DATA] Splitting train dataset")
+    train_dataset, validation_dataset = random_split(train_dataset, [train_size, val_size])
 
-    def __getitem__(self, index):
-        return self.x[index], self.y[index]
+    train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
+    validation_loader = DataLoader(dataset=validation_dataset, batch_size=batch_size, shuffle=False)
+    test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
 
-    def __len__(self):
-        return self.num_samples
-
-
-def get_data_loaders(batch_size):
-
-    dataset = OnePieceDataset()
-    X_train, X_test, y_train, y_test = train_test_split(dataset.x, dataset.y, test_size=0.2, random_state=42)
-    train = TensorDataset(X_train, torch.tensor(y_train))
-    test = TensorDataset(X_test, torch.tensor(y_test))
-
-    train_loader = DataLoader(dataset=train, batch_size=batch_size, shuffle=True)
-    test_loader = DataLoader(dataset=test, batch_size=batch_size, shuffle=True)
-
-    return train_loader, test_loader
+    return train_loader, validation_loader, test_loader

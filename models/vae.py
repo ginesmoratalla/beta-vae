@@ -1,11 +1,10 @@
 import torch
 from torch import nn
-import torch.nn.functional as F
 
 
 class VariationalAutoEncoder(nn.Module):
 
-    def __init__(self, in_channels, z_dim=100, flat_dim=64*4*4) -> None:
+    def __init__(self, in_channels, z_dim=70, flat_dim=512) -> None:
         super(VariationalAutoEncoder, self).__init__()
 
         self.encoder = nn.Sequential(
@@ -25,16 +24,18 @@ class VariationalAutoEncoder(nn.Module):
             nn.BatchNorm1d(128),
             nn.LeakyReLU(),
         )
-        self.enc_mu = nn.Linear(in_features=128, out_features=z_dim)
-        self.enc_sigma = nn.Linear(in_features=128, out_features=z_dim)
+        self.mu = nn.Linear(in_features=128, out_features=z_dim)
+        self.sigma = nn.Linear(in_features=128, out_features=z_dim)
 
         self.decoder = nn.Sequential(
+            # Fully connected layers
             nn.Linear(in_features=z_dim, out_features=128),
             nn.BatchNorm1d(128),
             nn.LeakyReLU(),
             nn.Linear(in_features=128, out_features=flat_dim),
             nn.Unflatten(1, (64, 4, 4)),
 
+            # Conv layers
             nn.ConvTranspose2d(in_channels=64, out_channels=32, kernel_size=4, stride=3),
             nn.ReLU(),
 
@@ -53,7 +54,7 @@ class VariationalAutoEncoder(nn.Module):
         z is given followig a per-image gaussian.
         """
         x = self.encoder(x)
-        mu, logvar = self.enc_mu(x), self.enc_sigma(x)
+        mu, logvar = self.mu(x), self.sigma(x)
         return mu, logvar
 
     def decode(self, z):
@@ -69,21 +70,23 @@ class VariationalAutoEncoder(nn.Module):
         return x_hat
 
     def forward(self, x):
-
+        """
+        N.B. We learn the log(variance) instead of the variance itself
+        to avoid it taking negative values, which, in turn, may lead
+        to errors when computing the KL divergence.
+        """
         # --- Encoder ---
         mu, logvar = self.encode(x)
-        sigma = logvar  # TODO: transform logvar to std
-        eps = torch.randn_like(sigma)
-        z = mu + (eps * sigma)
-        # --- Encoder ---
+        sigma = torch.exp(0.5 * logvar)  # Compute real std
+        eps = torch.randn_like(sigma)    # Add sampled randomness via epsilon
+        z = mu + (eps * sigma)           # Reparameterization trick
 
         # --- Decoder ---
         x_hat = self.decode(z)
-        # --- Decoder ---
 
         return mu, sigma, x_hat
 
-    def sample(self, z_dim):
+    def sample(self, z_dim, n_samples=1):
         """
         VAE generation via sampling
 
@@ -93,7 +96,7 @@ class VariationalAutoEncoder(nn.Module):
         z helps the decoder generate an artificial image
         from the learned latent distribution
         """
-        z = torch.randn_like(z_dim)
+        z = torch.randn(n_samples, z_dim)
         x_hat = self.decode(z)
         return x_hat
 
