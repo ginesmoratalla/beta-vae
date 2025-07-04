@@ -11,7 +11,7 @@ from loaders.dataloader import get_mnist_loaders
 from models.vae import VariationalAutoEncoder
 
 # --- Hyperparameters ---
-BETA = 0.1
+BETA = 1
 Z_DIM = 70
 IMAGE_FLAT_DIM = 64*4*4
 LR = 3e-4
@@ -43,9 +43,9 @@ def train_model():
 
             # forward pass
             mu, sigma, x_hat = model(x)
-            reconstruction_loss = loss_fn(x_hat, x)
-            kl_div = torch.sum(1 + torch.log(sigma**2) - mu**2 - sigma**2) / 2
-            loss = reconstruction_loss - kl_div
+            reconstruction_loss = loss_fn(x_hat, x) / x.shape[0]
+            kl_div = -torch.sum(1 + torch.log(sigma**2) - mu**2 - sigma**2) / 2
+            loss = reconstruction_loss + (kl_div * BETA)
 
             # backward pass
             optimizer.zero_grad()
@@ -56,6 +56,7 @@ def train_model():
             loop.set_postfix(loss=loss.item())
 
             if counter % 1000 == 0:
+                print("[DEBUG METRIC]: ")
                 print(f"Epoch [{epoch+1}/{NUM_EPOCHS}], Step [{i+1}/{n_total_steps}], Loss {loss.item():.4f}")
 
             counter += 1

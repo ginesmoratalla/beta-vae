@@ -1,0 +1,14 @@
+[project]
+name = "beta-vae"
+version = "0.1.0"
+description = "Reimplementation of a Beta-VAE"
+readme = "REAME.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.3.1",
+    "pandas>=2.3.0",
+    "torch>=2.7.1",
+    "torchvision>=0.22.1",
+    "tqdm>=4.67.1",
+]
+

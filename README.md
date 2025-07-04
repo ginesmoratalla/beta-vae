@@ -1,3 +1,5 @@
 ## Variational Autoencoder (VAE)
 
-$$p(x) = \int{p(x\mid{z}) \ p(z) \ dz}$$
+
+## Sources
+- Auto-Encoding Variational Bayes [Diederik P Kingma, Max Welling. 2013](https://arxiv.org/pdf/1312.6114)
