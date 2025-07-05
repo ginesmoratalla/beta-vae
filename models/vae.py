@@ -4,7 +4,7 @@ from torch import nn
 
 class VariationalAutoEncoder(nn.Module):
 
-    def __init__(self, in_channels, z_dim=70, flat_dim=512) -> None:
+    def __init__(self, in_channels, z_dim=60, flat_dim=512) -> None:
         super(VariationalAutoEncoder, self).__init__()
 
         self.encoder = nn.Sequential(
@@ -40,8 +40,7 @@ class VariationalAutoEncoder(nn.Module):
             nn.ReLU(),
 
             nn.ConvTranspose2d(in_channels=32, out_channels=in_channels, kernel_size=4, stride=2),
-            nn.BatchNorm2d(in_channels),
-            nn.ReLU(),
+            # nn.BatchNorm2d(in_channels),
             nn.Sigmoid(),
         )
 

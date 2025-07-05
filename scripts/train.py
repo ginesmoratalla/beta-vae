@@ -1,3 +1,4 @@
+import enum
 import torch
 import sys
 from torchsummary import summary
@@ -7,7 +8,7 @@ import torch.optim as optim
 import numpy as np
 from torchvision import datasets, transforms
 from torchvision.datasets.places365 import path
-from torchvision.utils import save_image
+from torchvision.utils import save_image, make_grid
 from tqdm import tqdm
 from utils.model_handler import save_model
 
@@ -22,7 +23,7 @@ BETA = 1
 Z_DIM = 70
 IMAGE_FLAT_DIM = 64*4*4
 LR = 3e-4
-NUM_EPOCHS = 2
+NUM_EPOCHS = 10
 BATCH_SIZE = 128
 device = "mps"
 
@@ -49,6 +50,7 @@ def train_model(run_path):
     batch x[0] of the KL divergence between q_theta(z|x) and p(z) = N(0, I).
     """
 
+    fixed_batch = next(iter(train_loader))  # For reconstruction recording
     writer = SummaryWriter(run_path + "/tensorboard-logs")
     writer.add_graph(model, torch.rand(BATCH_SIZE, 1, 28, 28).to(device))
 
@@ -92,8 +94,8 @@ def train_model(run_path):
                 epoch_loss.append(loss.detach().cpu().numpy())
 
             if counter % 1000 == 0:
-                print(f"\nEpoch [{epoch+1}/{NUM_EPOCHS}], Step [{i+1}/{n_total_steps}], Loss {loss.item():.4f}")
-                log_tensorboard(writer)
+                print(f"\nEpoch [{epoch+1}/{NUM_EPOCHS}], Step [{i+1}/{n_total_steps}], Loss {loss.item():.4f}, BCELoss {reconstruction_loss:.4f}, KL_Div: {kl_div:.4f}")
+                log_tensorboard(writer, fixed_batch, counter)
 
             counter += 1
 
@@ -109,12 +111,18 @@ def train_model(run_path):
     print("Model finished training.\n")
 
 
-def log_tensorboard(writer: SummaryWriter):
+def log_tensorboard(writer: SummaryWriter, batch: torch.Tensor, epoch: int):
 
     model.eval()
 
     with torch.no_grad():
-        pass
+        x, _ = batch
+        x = x[:32].to(device)  # [128, 1, 28, 28]
+        _, _, reconstructed_batch = model(x)
+        reconstructed_batch = reconstructed_batch[:32]
+        stacked_grid = torch.stack([x, reconstructed_batch], dim=1).flatten(0, 1)
+        img_grid = make_grid(stacked_grid, nrow=8)
+        writer.add_image('Image Reconstructions', img_grid, epoch)
 
     model.train()
 
