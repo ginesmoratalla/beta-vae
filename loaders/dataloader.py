@@ -17,18 +17,13 @@ def get_mnist_loaders(batch_size):
     normalizes the pixel values so they can
     be displayed and so that sigmoid works
     """
+    print("==" * 20)
     print("[DATA] Loading train dataset")
     train_dataset = datasets.MNIST(root=DATASET_PATH, train=True, transform=transforms.ToTensor(), download=True)
     print("[DATA] Loading test dataset")
-    test_dataset = datasets.MNIST(root=DATASET_PATH, train=False, transform=transforms.ToTensor(), download=True)
-    train_size = int(len(train_dataset) * 0.6)
-    val_size = len(train_dataset) - train_size
-
-    print("[DATA] Splitting train dataset")
-    train_dataset, validation_dataset = random_split(train_dataset, [train_size, val_size])
+    val_dataset = datasets.MNIST(root=DATASET_PATH, train=False, transform=transforms.ToTensor(), download=True)
 
     train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
-    validation_loader = DataLoader(dataset=validation_dataset, batch_size=batch_size, shuffle=False)
-    test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
+    validation_loader = DataLoader(dataset=val_dataset, batch_size=batch_size, shuffle=False)
 
-    return train_loader, validation_loader, test_loader
+    return train_loader, validation_loader
