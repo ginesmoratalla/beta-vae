@@ -40,7 +40,6 @@ class VariationalAutoEncoder(nn.Module):
             nn.ReLU(),
 
             nn.ConvTranspose2d(in_channels=32, out_channels=in_channels, kernel_size=4, stride=2),
-            # nn.BatchNorm2d(in_channels),
             nn.Sigmoid(),
         )
 

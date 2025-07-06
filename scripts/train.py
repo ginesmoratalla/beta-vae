@@ -1,29 +1,27 @@
-import enum
-import torch
 import sys
-from torchsummary import summary
 from rich import print
+import numpy as np
+from tqdm import tqdm
+
+import torch
 import torch.nn as nn
 import torch.optim as optim
-import numpy as np
-from torchvision import datasets, transforms
-from torchvision.datasets.places365 import path
+from torchsummary import summary
 from torchvision.utils import save_image, make_grid
-from tqdm import tqdm
-from utils.model_handler import save_model
-
 from torch.utils.tensorboard import SummaryWriter
 
 # Project imports
 from loaders.dataloader import get_mnist_loaders
 from models.vae import VariationalAutoEncoder
+from utils.model_handler import save_model
+from utils.visualization import create_reconstruction_gif
 
 # --- Hyperparameters ---
 BETA = 1
 Z_DIM = 70
 IMAGE_FLAT_DIM = 64*4*4
 LR = 3e-4
-NUM_EPOCHS = 10
+NUM_EPOCHS = 3
 BATCH_SIZE = 128
 device = "mps"
 
@@ -50,6 +48,7 @@ def train_model(run_path):
     batch x[0] of the KL divergence between q_theta(z|x) and p(z) = N(0, I).
     """
 
+    reconstruction_evolution_gif = []
     fixed_batch = next(iter(train_loader))  # For reconstruction recording
     writer = SummaryWriter(run_path + "/tensorboard-logs")
     writer.add_graph(model, torch.rand(BATCH_SIZE, 1, 28, 28).to(device))
@@ -88,41 +87,55 @@ def train_model(run_path):
             loop.set_postfix(loss=loss.item())
 
             # For TensorBoard
-            if counter % 100 == 0:
+            if counter % 300 == 0:
                 epoch_kl_div.append(kl_div.detach().cpu().numpy())
                 epoch_reconstruction_loss.append(reconstruction_loss.detach().cpu().numpy())
                 epoch_loss.append(loss.detach().cpu().numpy())
+                reconstruction_evolution_gif.append(log_tensorboard(writer, fixed_batch, counter))
 
             if counter % 1000 == 0:
                 print(f"\nEpoch [{epoch+1}/{NUM_EPOCHS}], Step [{i+1}/{n_total_steps}], Loss {loss.item():.4f}, BCELoss {reconstruction_loss:.4f}, KL_Div: {kl_div:.4f}")
-                log_tensorboard(writer, fixed_batch, counter)
 
             counter += 1
 
         # TensorBoard Checkpoint
-        writer.add_scalar('training loss mean', np.mean(epoch_loss), epoch)
-        writer.add_scalar('training loss std', np.std(epoch_loss), epoch)
-        writer.add_scalar('KL divergence mean', np.mean(epoch_kl_div), epoch)
-        writer.add_scalar('KL divergence std', np.std(epoch_kl_div), epoch)
-        writer.add_scalar('Reconstruction loss mean', np.mean(epoch_reconstruction_loss), epoch)
-        writer.add_scalar('Reconstruction loss std', np.std(epoch_reconstruction_loss), epoch)
+        writer.add_scalar('training loss mean (per batch)', np.mean(epoch_loss), epoch)
+        writer.add_scalar('training loss std (per batch)', np.std(epoch_loss), epoch)
+        writer.add_scalar('KL divergence mean (per batch)', np.mean(epoch_kl_div), epoch)
+        writer.add_scalar('KL divergence std (per batch)', np.std(epoch_kl_div), epoch)
+        writer.add_scalar('Reconstruction loss mean (per batch)', np.mean(epoch_reconstruction_loss), epoch)
+        writer.add_scalar('Reconstruction loss std (per batch)', np.std(epoch_reconstruction_loss), epoch)
 
     writer.close()
+    create_reconstruction_gif(reconstruction_evolution_gif, run_path)
     print("Model finished training.\n")
 
 
+@torch.no_grad()
 def log_tensorboard(writer: SummaryWriter, batch: torch.Tensor, epoch: int):
 
     model.eval()
+    x, _ = batch
+    x = x[:32].to(device)  # [BATCH, 1, 28, 28]
+    _, _, reconstructed_batch = model(x)
+    reconstructed_batch = reconstructed_batch[:32]
+    stacked_grid = torch.stack([x, reconstructed_batch], dim=1).flatten(0, 1)
+    img_grid = make_grid(stacked_grid, nrow=8)
+    writer.add_image('Image Reconstructions', img_grid, epoch)
+    model.train()
 
-    with torch.no_grad():
-        x, _ = batch
-        x = x[:32].to(device)  # [128, 1, 28, 28]
-        _, _, reconstructed_batch = model(x)
-        reconstructed_batch = reconstructed_batch[:32]
-        stacked_grid = torch.stack([x, reconstructed_batch], dim=1).flatten(0, 1)
-        img_grid = make_grid(stacked_grid, nrow=8)
-        writer.add_image('Image Reconstructions', img_grid, epoch)
+    return img_grid.detach().cpu()
+
+
+@torch.no_grad()
+def get_inner_filters(writer: SummaryWriter, batch: torch.Tensor):
+
+    model.eval()
+
+    x, _ = batch
+    x = x[:32].to(device)  # [BATCH, 1, 28, 28]
+    _, _, reconstructed_batch = model(x)
+    reconstructed_batch = reconstructed_batch[:32]
 
     model.train()
 
