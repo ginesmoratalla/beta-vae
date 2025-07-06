@@ -5,7 +5,7 @@
 <table>
   <tr>
     <td align="center">
-      Vanilla VAE<br>Decoder Reconstruction<br>(MNIST)
+      Vanilla VAE<br>Decoder Reconstruction - training set<br>(MNIST)
     </td>
   </tr>
   <tr>

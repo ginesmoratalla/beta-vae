@@ -1,7 +1,9 @@
 import sys
+from matplotlib import cm
 from rich import print
 import numpy as np
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 import torch
 import torch.nn as nn
@@ -14,7 +16,7 @@ from torch.utils.tensorboard import SummaryWriter
 from loaders.dataloader import get_mnist_loaders
 from models.vae import VariationalAutoEncoder
 from utils.model_handler import save_model
-from utils.visualization import create_reconstruction_gif
+from utils.visualization import gif_from_tensors
 
 # --- Hyperparameters ---
 BETA = 1
@@ -48,6 +50,8 @@ def train_model(run_path):
     batch x[0] of the KL divergence between q_theta(z|x) and p(z) = N(0, I).
     """
 
+    enc_layers = {}  # Encoder Conv layers (to keep track of filters)
+    dec_layers = {}  # Decoder Conv layers (to keep track of filters)
     reconstruction_evolution_gif = []
     fixed_batch = next(iter(train_loader))  # For reconstruction recording
     writer = SummaryWriter(run_path + "/tensorboard-logs")
@@ -95,6 +99,8 @@ def train_model(run_path):
 
             if counter % 1000 == 0:
                 print(f"\nEpoch [{epoch+1}/{NUM_EPOCHS}], Step [{i+1}/{n_total_steps}], Loss {loss.item():.4f}, BCELoss {reconstruction_loss:.4f}, KL_Div: {kl_div:.4f}")
+                filter_checkpoint(enc_layers, dec_layers)
+
 
             counter += 1
 
@@ -107,7 +113,12 @@ def train_model(run_path):
         writer.add_scalar('Reconstruction loss std (per batch)', np.std(epoch_reconstruction_loss), epoch)
 
     writer.close()
-    create_reconstruction_gif(reconstruction_evolution_gif, run_path)
+    gif_from_tensors(
+        img_sequence_list=reconstruction_evolution_gif,
+        path=run_path,
+        frame_duration=0.7,
+        gif_name='reconstruction.gif',
+    )
     print("Model finished training.\n")
 
 
@@ -128,19 +139,47 @@ def log_tensorboard(writer: SummaryWriter, batch: torch.Tensor, epoch: int):
 
 
 @torch.no_grad()
-def get_inner_filters(writer: SummaryWriter, batch: torch.Tensor):
-
+def filter_checkpoint(enc_layers={}, dec_layers={}):
+    """
+    Track filter weights along training
+    """
     model.eval()
 
-    x, _ = batch
-    x = x[:32].to(device)  # [BATCH, 1, 28, 28]
-    _, _, reconstructed_batch = model(x)
-    reconstructed_batch = reconstructed_batch[:32]
+    for (index, layer) in model.encoder.named_modules():
+        if "Conv" in layer.__class__.__name__:
+            i = int(index)
+            enc_layers[i] = enc_layers.get(i, [])
+            layer = model.encoder[i].weight
+            enc_layers[i].append(layer)
+
+    for index, layer in model.decoder.named_modules():
+        if "Conv" in layer.__class__.__name__:
+            i = int(index)
+            dec_layers[i] = dec_layers.get(i, [])
+            layer = model.decoder[i].weight
+            dec_layers[i].append(layer)
+
+    for layer in enc_layers.values():
+        fig = plt.figure(figsize=(8, 12))
+        for timestamp in layer:
+            # Dimensions: [out_channels, in_channels, kernel, kernel]
+            for i in range(timestamp.shape[0]):
+                filter = timestamp[i, :, :, :]
+                fig = plt.subplot(8, 8, i+1)
+                fig.set_yticks([])
+                fig.set_xticks([])
+                plt.imshow(filter.cpu(), cmap='gray')
+        plt.show()
+
+
+
 
     model.train()
+    exit(0)
 
 
 if __name__ == "__main__":
+    filter_checkpoint()
     RUN_PATH = sys.argv[1]
     print("[PRE-TRAIN] Training model...")
     print("==" * 20)
