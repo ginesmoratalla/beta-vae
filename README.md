@@ -5,14 +5,48 @@
 <table>
   <tr>
     <td align="center">
-      Vanilla VAE<br>Decoder Reconstruction - training set<br>(MNIST)
+    </td>
+    <td align="center">
+      Decoder Reconstruction - Training Set<br>(MNIST)
+    </td>
+    <td align="center">
+      Decoder Reconstruction - Validation Set<br>(MNIST)
+    </td>
+    <td align="center">
+      Convolutional Layers Output - Encoder (MNIST)
+    </td>
+    <td align="center">
+      Convolutional Layers Output - Decoder (MNIST)
     </td>
   </tr>
+  
   <tr>
     <td align="center">
-      <img src="res/vanilla-reconstruction.gif" alt="VAE Decoder Reconstruction" style="width:250px;height:250px;">
+      Vanilla VAE
+    </td>
+    <td align="center">
+      <img src="res/vanilla_training_reconstruction.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
+    </td>
+    <td align="center">
+      <img src="res/vanilla_validation_reconstruction.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
+    </td>
+    <td align="center">
+      <img src="res/vanilla_conv1_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
+      <img src="res/vanilla_conv2_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
+    </td>
+    <td align="center">
+      <img src="res/vanilla_conv3_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
+      <img src="res/vanilla_conv4_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
     </td>
   </tr>
+
+  <!--
+  <tr>
+    <td align="center">
+      β-VAE
+    </td>
+  </tr>
+  -->
 </table>
 
 <div style="  display: flex; justify-content: center; align-items: center;">
