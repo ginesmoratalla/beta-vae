@@ -1,22 +1,22 @@
 # Variational Autoencoder (VAE)
 
-## Training Evolution
+## Training Evolution (MNIST)
 
 <table>
   <tr>
     <td align="center">
     </td>
     <td align="center">
-      Decoder Reconstruction - Training Set<br>(MNIST)
+      Decoder Reconstruction - Training Set
     </td>
     <td align="center">
-      Decoder Reconstruction - Validation Set<br>(MNIST)
+      Decoder Reconstruction - Validation Set
     </td>
     <td align="center">
-      Convolutional Layers Output - Encoder (MNIST)
+      Convolutional Layers Output - Encoder
     </td>
     <td align="center">
-      Convolutional Layers Output - Decoder (MNIST)
+      Convolutional Layers Output - Decoder
     </td>
   </tr>
   
