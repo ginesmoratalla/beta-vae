@@ -2,6 +2,7 @@ import sys
 from matplotlib import cm
 from rich import print
 import numpy as np
+from torch._prims_common import Tensor
 from torch.nn.modules import conv
 from tqdm import tqdm
 import matplotlib.pyplot as plt
@@ -78,7 +79,7 @@ def train_model(run_path):
             x = x.to(device)
 
             # forward pass
-            mu, sigma, x_hat, _ = model(x)
+            mu, sigma, x_hat, conv_layers = model(x)
             reconstruction_loss = loss_fn(x_hat, x)
             kl_div = -0.5 * torch.sum(1 + torch.log(sigma**2) - mu**2 - sigma**2)
             loss = (reconstruction_loss + (kl_div * BETA)) / BATCH_SIZE
@@ -101,8 +102,16 @@ def train_model(run_path):
                         writer,
                         fixed_train_batch,
                         counter,
+                        conv_layers=conv_layers,
                         validation=False
                     )
+                )
+                log_tensorboard(
+                    writer,
+                    fixed_val_batch,
+                    counter,
+                    conv_layers=(),
+                    validation=True
                 )
 
             if counter % 1000 == 0:
@@ -133,30 +142,36 @@ def train_model(run_path):
 def log_tensorboard(
         writer: SummaryWriter,
         batch: torch.Tensor,
-        epoch: int,
+        step: int,
+        conv_layers: tuple[Tensor, ...],
         validation=True,
 ):
     mode = "(Validation)" if validation else "(Training)"
-
     model.eval()
     x, _ = batch
     x = x[:32].to(device)  # [BATCH, 1, 28, 28]
-    _, _, reconstructed_batch, (conv_layers) = model(x)
+    _, _, reconstructed_batch, _ = model(x)
     reconstructed_batch = reconstructed_batch[:32]
     stacked_grid = torch.stack([x, reconstructed_batch], dim=1).flatten(0, 1)
     img_grid = make_grid(stacked_grid, nrow=8)
-    writer.add_image(f'Image Reconstructions {mode}', img_grid, epoch)
+    writer.add_image(f'Image Reconstructions {mode}', img_grid, step)
 
-    if not validation:
-        for i, layer in enumerate(conv_layers):  # Dimensions: [out_channels, in_channels, kernel, kernel]
-            stacked_grid = []
-            for j in range(layer.shape[0]):
-                filter = torch.mean(layer[j, :, :, :], dim=0)
-                stacked_grid.append(filter)
+    # Store conv layer output as image grid
+    # Layer dims: [out_channels, in_channels, kernel, kernel]
+    for i, layer in enumerate(conv_layers):
+        layer_stacked_grid = []
+        # Iter through every filter in a layer
+        for j in range(layer.shape[1]):
+            filter = layer[:, j, :, :]
+            filter = torch.mean(filter, dim=0).unsqueeze(0)  # Mean over the whole batch
+            layer_stacked_grid.append(filter)
 
-            stacked_grid = torch.stack(stacked_grid, dim=0).unsqueeze(1)
-            img_grid = make_grid(stacked_grid, nrow=8, padding=1, pad_value=255)
-            writer.add_image(f'Conv layer {i+1} outputs', img_grid, epoch)
+        layer_stacked_grid = torch.stack(layer_stacked_grid, dim=0)
+        if i+1 == len(conv_layers):
+            layer_stacked_grid = model.sigmoid(layer_stacked_grid)
+
+        layer_img_gird = make_grid(layer_stacked_grid, nrow=8, padding=1, pad_value=255)
+        writer.add_image(f'Conv layer {i+1} outputs', layer_img_gird, step)
 
     model.train()
     return img_grid.detach().cpu()
