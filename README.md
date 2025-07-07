@@ -52,8 +52,6 @@
 <table>
     <tr>
     <td align="center">
-    </td>
-    <td align="center">
       Loss
     </td>
     <td align="center">
@@ -65,9 +63,6 @@
   </tr>
 
   <tr>
-    <td align="center">
-      Vanilla VAE
-    </td>
     <td align="center">
     </td>
     <td align="center">
