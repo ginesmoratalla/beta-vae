@@ -49,6 +49,34 @@
   -->
 </table>
 
+<table>
+    <tr>
+    <td align="center">
+    </td>
+    <td align="center">
+      Loss
+    </td>
+    <td align="center">
+      Reconstruction Loss
+    </td>
+    <td align="center">
+      KL Divergence
+    </td>
+  </tr>
+
+  <tr>
+    <td align="center">
+      Vanilla VAE
+    </td>
+    <td align="center">
+    </td>
+    <td align="center">
+    </td>
+    <td align="center">
+    </td>
+  </tr>
+</table>
+
 <div style="  display: flex; justify-content: center; align-items: center;">
 </div>
 
