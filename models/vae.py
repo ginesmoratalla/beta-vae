@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+from torch.nn.modules import conv
 
 
 class VariationalAutoEncoder(nn.Module):
@@ -7,41 +8,31 @@ class VariationalAutoEncoder(nn.Module):
     def __init__(self, in_channels, z_dim=60, flat_dim=512) -> None:
         super(VariationalAutoEncoder, self).__init__()
 
-        self.encoder = nn.Sequential(
-            # Conv layers
-            nn.Conv2d(in_channels=in_channels, out_channels=32, kernel_size=3),
-            nn.BatchNorm2d(32),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),
+        # ENCODER
+        self.conv1 = nn.Conv2d(in_channels=in_channels, out_channels=32, kernel_size=3)
+        self.bn1 = nn.BatchNorm2d(32)
+        self.relu = nn.ReLU()
+        self.maxpool1 = nn.MaxPool2d(kernel_size=2, stride=2)
 
-            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=2),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=3, stride=3),
+        self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=2)
+        self.maxpool2 = nn.MaxPool2d(kernel_size=3, stride=3)
+        self.flatten = nn.Flatten()
 
-            # Fully connected layers
-            nn.Flatten(),
-            nn.Linear(in_features=flat_dim, out_features=128),
-            nn.BatchNorm1d(128),
-            nn.LeakyReLU(),
-        )
+        self.fc1 = nn.Linear(in_features=flat_dim, out_features=128)
+        self.bn2 = nn.BatchNorm2d(128)
+        self.lkrelu = nn.LeakyReLU()
+
         self.mu = nn.Linear(in_features=128, out_features=z_dim)
         self.sigma = nn.Linear(in_features=128, out_features=z_dim)
 
-        self.decoder = nn.Sequential(
-            # Fully connected layers
-            nn.Linear(in_features=z_dim, out_features=128),
-            nn.BatchNorm1d(128),
-            nn.LeakyReLU(),
-            nn.Linear(in_features=128, out_features=flat_dim),
-            nn.Unflatten(1, (64, 4, 4)),
-
-            # Conv layers
-            nn.ConvTranspose2d(in_channels=64, out_channels=32, kernel_size=4, stride=3),
-            nn.ReLU(),
-
-            nn.ConvTranspose2d(in_channels=32, out_channels=in_channels, kernel_size=4, stride=2),
-            nn.Sigmoid(),
-        )
+        # DECODER
+        self.fc2 = nn.Linear(in_features=z_dim, out_features=128)
+        self.bn3 = nn.BatchNorm2d(128)
+        self.fc3 = nn.Linear(in_features=128, out_features=flat_dim)
+        self.unflatten = nn.Unflatten(1, (64, 4, 4))
+        self.conv3 = nn.ConvTranspose2d(in_channels=64, out_channels=32, kernel_size=4, stride=3)
+        self.conv4 = nn.ConvTranspose2d(in_channels=32, out_channels=in_channels, kernel_size=4, stride=2)
+        self.sigmoid = nn.Sigmoid()
 
     def encode(self, x):
         """
@@ -51,9 +42,14 @@ class VariationalAutoEncoder(nn.Module):
 
         z is given followig a per-image gaussian.
         """
-        x = self.encoder(x)
+        conv1 = self.conv1(x)
+        x = self.maxpool1(self.relu(self.bn1(conv1)))
+        conv2 = self.conv2(x)
+        x = self.maxpool2(self.relu(conv2))
+        x = self.lkrelu(self.bn2(self.fc1(self.flatten(x))))
+
         mu, logvar = self.mu(x), self.sigma(x)
-        return mu, logvar
+        return mu, logvar, conv1, conv2
 
     def decode(self, z):
         """
@@ -64,8 +60,13 @@ class VariationalAutoEncoder(nn.Module):
         x_hat is meant to be a reconstruction of the image x passed to
         the encoder above OR sampled from p(z).
         """
-        x_hat = self.decoder(z)
-        return x_hat
+        x = self.unflatten(self.fc3(self.lkrelu(self.bn3(self.fc2(z)))))
+        conv3 = self.conv3(x)
+        x = self.relu(conv3)
+        conv4 = self.conv4(x)
+        x_hat = self.sigmoid(x)
+
+        return x_hat, conv3, conv4
 
     def forward(self, x):
         """
@@ -74,15 +75,15 @@ class VariationalAutoEncoder(nn.Module):
         to errors when computing the KL divergence.
         """
         # --- Encoder ---
-        mu, logvar = self.encode(x)
+        mu, logvar, c1, c2 = self.encode(x)
         sigma = torch.exp(0.5 * logvar)  # Compute real std
         eps = torch.randn_like(sigma)    # Add sampled randomness via epsilon
         z = mu + (eps * sigma)           # Reparameterization trick
 
         # --- Decoder ---
-        x_hat = self.decode(z)
+        x_hat, c3, c4 = self.decode(z)
 
-        return mu, sigma, x_hat
+        return mu, sigma, x_hat, (c1, c2, c3, c4)
 
     def sample(self, z_dim, n_samples=1):
         """
@@ -102,7 +103,7 @@ class VariationalAutoEncoder(nn.Module):
 if __name__ == "__main__":
     fake_img = torch.rand([2, 1, 28, 28])
     vae = VariationalAutoEncoder(in_channels=1)
-    mu, sigma, x_hat = vae.forward(fake_img)
+    mu, sigma, x_hat, _ = vae.forward(fake_img)
 
     space = " "
     print(f'Reconstructed image \t{x_hat.shape}')

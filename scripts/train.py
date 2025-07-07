@@ -2,6 +2,7 @@ import sys
 from matplotlib import cm
 from rich import print
 import numpy as np
+from torch.nn.modules import conv
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
@@ -50,8 +51,7 @@ def train_model(run_path):
     batch x[0] of the KL divergence between q_theta(z|x) and p(z) = N(0, I).
     """
 
-    enc_layers = {}  # Encoder Conv layers (to keep track of filters)
-    dec_layers = {}  # Decoder Conv layers (to keep track of filters)
+    conv_layers = {}  # Conv layers (to keep track of filters)
     reconstruction_evolution_gif = []
     fixed_batch = next(iter(train_loader))  # For reconstruction recording
     writer = SummaryWriter(run_path + "/tensorboard-logs")
@@ -99,7 +99,7 @@ def train_model(run_path):
 
             if counter % 1000 == 0:
                 print(f"\nEpoch [{epoch+1}/{NUM_EPOCHS}], Step [{i+1}/{n_total_steps}], Loss {loss.item():.4f}, BCELoss {reconstruction_loss:.4f}, KL_Div: {kl_div:.4f}")
-                filter_checkpoint(enc_layers, dec_layers)
+                filter_checkpoint(conv_layers)
 
 
             counter += 1
@@ -139,40 +139,36 @@ def log_tensorboard(writer: SummaryWriter, batch: torch.Tensor, epoch: int):
 
 
 @torch.no_grad()
-def filter_checkpoint(enc_layers={}, dec_layers={}):
+def filter_checkpoint(conv_layers={}):
     """
     Track filter weights along training
     """
     model.eval()
 
-    for (index, layer) in model.encoder.named_modules():
-        if "Conv" in layer.__class__.__name__:
-            i = int(index)
-            enc_layers[i] = enc_layers.get(i, [])
-            layer = model.encoder[i].weight
-            enc_layers[i].append(layer)
 
-    for index, layer in model.decoder.named_modules():
-        if "Conv" in layer.__class__.__name__:
-            i = int(index)
-            dec_layers[i] = dec_layers.get(i, [])
-            layer = model.decoder[i].weight
-            dec_layers[i].append(layer)
+    for i, (name, layer) in enumerate(model.named_modules()):
 
-    for layer in enc_layers.values():
-        fig = plt.figure(figsize=(8, 12))
-        for timestamp in layer:
-            # Dimensions: [out_channels, in_channels, kernel, kernel]
+        if "conv" in name:
+            conv_layers[i] = conv_layers.get(i, [])
+            layer_weight = layer.weight
+            conv_layers[i].append(layer_weight)
+
+    for j, layer in enumerate(conv_layers.values()):
+
+        # if j == 0: continue
+
+        fig = plt.figure(figsize=(8, 8))
+        for timestamp in layer:  # Dimensions: [out_channels, in_channels, kernel, kernel]
             for i in range(timestamp.shape[0]):
                 filter = timestamp[i, :, :, :]
+                print(filter.shape)
+                filter = filter.reshape(filter.shape[1], filter.shape[2])
                 fig = plt.subplot(8, 8, i+1)
                 fig.set_yticks([])
                 fig.set_xticks([])
                 plt.imshow(filter.cpu(), cmap='gray')
+
         plt.show()
-
-
-
 
     model.train()
     exit(0)
