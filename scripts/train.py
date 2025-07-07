@@ -144,10 +144,7 @@ def filter_checkpoint(conv_layers={}):
     Track filter weights along training
     """
     model.eval()
-
-
     for i, (name, layer) in enumerate(model.named_modules()):
-
         if "conv" in name:
             conv_layers[i] = conv_layers.get(i, [])
             layer_weight = layer.weight
@@ -160,9 +157,7 @@ def filter_checkpoint(conv_layers={}):
         fig = plt.figure(figsize=(8, 8))
         for timestamp in layer:  # Dimensions: [out_channels, in_channels, kernel, kernel]
             for i in range(timestamp.shape[0]):
-                filter = timestamp[i, :, :, :]
-                print(filter.shape)
-                filter = filter.reshape(filter.shape[1], filter.shape[2])
+                filter = torch.mean(timestamp[i, :, :, :], dim=0)
                 fig = plt.subplot(8, 8, i+1)
                 fig.set_yticks([])
                 fig.set_xticks([])
