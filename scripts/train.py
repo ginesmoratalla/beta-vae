@@ -24,7 +24,7 @@ BETA = 1
 Z_DIM = 70
 IMAGE_FLAT_DIM = 64*4*4
 LR = 3e-4
-NUM_EPOCHS = 3
+NUM_EPOCHS = 2
 BATCH_SIZE = 128
 device = "mps"
 
@@ -53,7 +53,8 @@ def train_model(run_path):
 
     conv_layers = {}  # Conv layers (to keep track of filters)
     reconstruction_evolution_gif = []
-    fixed_batch = next(iter(train_loader))  # For reconstruction recording
+    fixed_train_batch = next(iter(train_loader))  # For reconstruction recording
+    fixed_val_batch = next(iter(val_loader))      # For reconstruction recording
     writer = SummaryWriter(run_path + "/tensorboard-logs")
     writer.add_graph(model, torch.rand(BATCH_SIZE, 1, 28, 28).to(device))
 
@@ -77,7 +78,7 @@ def train_model(run_path):
             x = x.to(device)
 
             # forward pass
-            mu, sigma, x_hat = model(x)
+            mu, sigma, x_hat, _ = model(x)
             reconstruction_loss = loss_fn(x_hat, x)
             kl_div = -0.5 * torch.sum(1 + torch.log(sigma**2) - mu**2 - sigma**2)
             loss = (reconstruction_loss + (kl_div * BETA)) / BATCH_SIZE
@@ -95,12 +96,18 @@ def train_model(run_path):
                 epoch_kl_div.append(kl_div.detach().cpu().numpy())
                 epoch_reconstruction_loss.append(reconstruction_loss.detach().cpu().numpy())
                 epoch_loss.append(loss.detach().cpu().numpy())
-                reconstruction_evolution_gif.append(log_tensorboard(writer, fixed_batch, counter))
+                reconstruction_evolution_gif.append(
+                    log_tensorboard(
+                        writer,
+                        fixed_train_batch,
+                        counter,
+                        validation=False
+                    )
+                )
 
             if counter % 1000 == 0:
                 print(f"\nEpoch [{epoch+1}/{NUM_EPOCHS}], Step [{i+1}/{n_total_steps}], Loss {loss.item():.4f}, BCELoss {reconstruction_loss:.4f}, KL_Div: {kl_div:.4f}")
-                filter_checkpoint(conv_layers)
-
+                # filter_checkpoint(counter, writer, {})
 
             counter += 1
 
@@ -123,23 +130,40 @@ def train_model(run_path):
 
 
 @torch.no_grad()
-def log_tensorboard(writer: SummaryWriter, batch: torch.Tensor, epoch: int):
+def log_tensorboard(
+        writer: SummaryWriter,
+        batch: torch.Tensor,
+        epoch: int,
+        validation=True,
+):
+    mode = "(Validation)" if validation else "(Training)"
 
     model.eval()
     x, _ = batch
     x = x[:32].to(device)  # [BATCH, 1, 28, 28]
-    _, _, reconstructed_batch = model(x)
+    _, _, reconstructed_batch, (conv_layers) = model(x)
     reconstructed_batch = reconstructed_batch[:32]
     stacked_grid = torch.stack([x, reconstructed_batch], dim=1).flatten(0, 1)
     img_grid = make_grid(stacked_grid, nrow=8)
-    writer.add_image('Image Reconstructions', img_grid, epoch)
-    model.train()
+    writer.add_image(f'Image Reconstructions {mode}', img_grid, epoch)
 
+    if not validation:
+        for i, layer in enumerate(conv_layers):  # Dimensions: [out_channels, in_channels, kernel, kernel]
+            stacked_grid = []
+            for j in range(layer.shape[0]):
+                filter = torch.mean(layer[j, :, :, :], dim=0)
+                stacked_grid.append(filter)
+
+            stacked_grid = torch.stack(stacked_grid, dim=0).unsqueeze(1)
+            img_grid = make_grid(stacked_grid, nrow=8, padding=1, pad_value=255)
+            writer.add_image(f'Conv layer {i+1} outputs', img_grid, epoch)
+
+    model.train()
     return img_grid.detach().cpu()
 
 
 @torch.no_grad()
-def filter_checkpoint(conv_layers={}):
+def filter_checkpoint(step: int, writer: SummaryWriter, conv_layers={}):
     """
     Track filter weights along training
     """
@@ -150,27 +174,22 @@ def filter_checkpoint(conv_layers={}):
             layer_weight = layer.weight
             conv_layers[i].append(layer_weight)
 
-    for j, layer in enumerate(conv_layers.values()):
-
-        # if j == 0: continue
-
-        fig = plt.figure(figsize=(8, 8))
+    for idx, layer in enumerate(conv_layers.values()):
+        stacked_grid = []
         for timestamp in layer:  # Dimensions: [out_channels, in_channels, kernel, kernel]
             for i in range(timestamp.shape[0]):
                 filter = torch.mean(timestamp[i, :, :, :], dim=0)
-                fig = plt.subplot(8, 8, i+1)
-                fig.set_yticks([])
-                fig.set_xticks([])
-                plt.imshow(filter.cpu(), cmap='gray')
+                stacked_grid.append(filter)
 
-        plt.show()
+        stacked_grid = torch.stack(stacked_grid, dim=0).unsqueeze(1)
+        img_grid = make_grid(stacked_grid, nrow=8, padding=2, pad_value=255)
+        writer.add_image(f'Conv layer {idx+1} filters', img_grid, step)
 
     model.train()
-    exit(0)
 
 
 if __name__ == "__main__":
-    filter_checkpoint()
+    # filter_checkpoint()
     RUN_PATH = sys.argv[1]
     print("[PRE-TRAIN] Training model...")
     print("==" * 20)

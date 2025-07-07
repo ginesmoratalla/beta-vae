@@ -19,7 +19,7 @@ class VariationalAutoEncoder(nn.Module):
         self.flatten = nn.Flatten()
 
         self.fc1 = nn.Linear(in_features=flat_dim, out_features=128)
-        self.bn2 = nn.BatchNorm2d(128)
+        self.bn2 = nn.BatchNorm1d(128)
         self.lkrelu = nn.LeakyReLU()
 
         self.mu = nn.Linear(in_features=128, out_features=z_dim)
@@ -27,7 +27,7 @@ class VariationalAutoEncoder(nn.Module):
 
         # DECODER
         self.fc2 = nn.Linear(in_features=z_dim, out_features=128)
-        self.bn3 = nn.BatchNorm2d(128)
+        self.bn3 = nn.BatchNorm1d(128)
         self.fc3 = nn.Linear(in_features=128, out_features=flat_dim)
         self.unflatten = nn.Unflatten(1, (64, 4, 4))
         self.conv3 = nn.ConvTranspose2d(in_channels=64, out_channels=32, kernel_size=4, stride=3)
@@ -64,7 +64,7 @@ class VariationalAutoEncoder(nn.Module):
         conv3 = self.conv3(x)
         x = self.relu(conv3)
         conv4 = self.conv4(x)
-        x_hat = self.sigmoid(x)
+        x_hat = self.sigmoid(conv4)
 
         return x_hat, conv3, conv4
 
