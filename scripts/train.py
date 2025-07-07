@@ -1,3 +1,4 @@
+import enum
 import sys
 from matplotlib import cm
 from rich import print
@@ -51,9 +52,9 @@ def train_model(run_path):
     kl_div: The sum over all latent dimensions z_i AND over each
     batch x[0] of the KL divergence between q_theta(z|x) and p(z) = N(0, I).
     """
-
-    conv_layers = {}  # Conv layers (to keep track of filters)
-    reconstruction_evolution_gif = []
+    conv_layer_timestamps = get_conv_dict()
+    train_reconstruction_evolution_gif = []
+    validation_reconstruction_evolution_gif = []
     fixed_train_batch = next(iter(train_loader))  # For reconstruction recording
     fixed_val_batch = next(iter(val_loader))      # For reconstruction recording
     writer = SummaryWriter(run_path + "/tensorboard-logs")
@@ -97,26 +98,33 @@ def train_model(run_path):
                 epoch_kl_div.append(kl_div.detach().cpu().numpy())
                 epoch_reconstruction_loss.append(reconstruction_loss.detach().cpu().numpy())
                 epoch_loss.append(loss.detach().cpu().numpy())
-                reconstruction_evolution_gif.append(
-                    log_tensorboard(
-                        writer,
-                        fixed_train_batch,
-                        counter,
-                        conv_layers=conv_layers,
-                        validation=False
-                    )
+                train_rec, conv_layer_output = log_tensorboard(
+                    writer,
+                    fixed_train_batch,
+                    counter,
+                    conv_layers=conv_layers,
+                    validation=False
                 )
-                log_tensorboard(
+                validation_rec, _ = log_tensorboard(
                     writer,
                     fixed_val_batch,
                     counter,
                     conv_layers=(),
                     validation=True
                 )
+                train_reconstruction_evolution_gif.append(train_rec)
+                validation_reconstruction_evolution_gif.append(validation_rec)
+                for i, layer_ts in enumerate(conv_layer_output):
+                    conv_layer_timestamps[i].append(layer_ts)
 
             if counter % 1000 == 0:
-                print(f"\nEpoch [{epoch+1}/{NUM_EPOCHS}], Step [{i+1}/{n_total_steps}], Loss {loss.item():.4f}, BCELoss {reconstruction_loss:.4f}, KL_Div: {kl_div:.4f}")
-                # filter_checkpoint(counter, writer, {})
+                print(
+                        f"Epoch [{epoch+1}/{NUM_EPOCHS}], "
+                        f"Step [{i+1}/{n_total_steps}], "
+                        f"Loss {loss.item():.4f},"
+                        f"BCELoss {reconstruction_loss:.4f},"
+                        f"KL_Div: {kl_div:.4f}"
+                      )
 
             counter += 1
 
@@ -129,13 +137,53 @@ def train_model(run_path):
         writer.add_scalar('Reconstruction loss std (per batch)', np.std(epoch_reconstruction_loss), epoch)
 
     writer.close()
-    gif_from_tensors(
-        img_sequence_list=reconstruction_evolution_gif,
-        path=run_path,
-        frame_duration=0.7,
-        gif_name='reconstruction.gif',
-    )
-    print("Model finished training.\n")
+    print("Model finished training.\nLoging metrics...")
+    metrics_to_save = []
+    training_reconstruction = {
+        'image_sequence': train_reconstruction_evolution_gif,
+        'frame_duration': 0.7,
+        'out_file_name': 'training_reconstruction.gif',
+    }
+    validation_reconstruction = {
+        'image_sequence': validation_reconstruction_evolution_gif,
+        'frame_duration': 0.7,
+        'out_file_name': 'validation_reconstruction.gif',
+    }
+    metrics_to_save.append(validation_reconstruction)
+    metrics_to_save.append(training_reconstruction)
+    for i in conv_layer_timestamps.keys():
+        metrics_to_save.append(
+            {
+                'image_sequence': conv_layer_timestamps[i],
+                'frame_duration': 0.9,
+                'out_file_name': f'conv{i+1}_outputs.gif',
+            }
+        )
+    post_training(run_path, metrics_to_save)
+
+
+@torch.no_grad()
+def get_conv_dict() -> dict:
+    cdict = {}
+    model.eval()
+    i = 0
+    for name, _ in model.named_modules():
+        if "conv" in name:
+            cdict[i] = []
+            i += 1
+    model.train()
+    return cdict
+
+
+@torch.no_grad()
+def post_training(path, metric_list):
+    for metric in metric_list:
+        gif_from_tensors(
+            img_sequence_list=metric['image_sequence'],
+            path=path,
+            frame_duration=metric['frame_duration'],
+            gif_name=metric['out_file_name'],
+        )
 
 
 @torch.no_grad()
@@ -158,6 +206,7 @@ def log_tensorboard(
 
     # Store conv layer output as image grid
     # Layer dims: [out_channels, in_channels, kernel, kernel]
+    conv_layers_gird = []
     for i, layer in enumerate(conv_layers):
         layer_stacked_grid = []
         # Iter through every filter in a layer
@@ -171,10 +220,11 @@ def log_tensorboard(
             layer_stacked_grid = model.sigmoid(layer_stacked_grid)
 
         layer_img_gird = make_grid(layer_stacked_grid, nrow=8, padding=1, pad_value=255)
+        conv_layers_gird.append(layer_img_gird)
         writer.add_image(f'Conv layer {i+1} outputs', layer_img_gird, step)
 
     model.train()
-    return img_grid.detach().cpu()
+    return img_grid.detach().cpu(), conv_layers_gird
 
 
 @torch.no_grad()
