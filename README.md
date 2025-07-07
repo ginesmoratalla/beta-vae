@@ -1,6 +1,6 @@
-## Variational Autoencoder (VAE)
+# Variational Autoencoder (VAE)
 
-## Decoder Reconstruction Evolution
+## Training Evolution
 
 <table>
   <tr>
