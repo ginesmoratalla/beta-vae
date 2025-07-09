@@ -68,9 +68,10 @@
       Vanilla VAE
     </td>
     <td align="center">
-      <img src="res/vanilla_samples.png" alt="Loss Vanilla" style="width:200px;height:200px;">
+      <img src="res/vanilla_samples.png" alt="Samples Vanilla" style="width:200px;height:200px;">
     </td>
     <td align="center">
+      <img src="res/vanilla_samples.png" alt="Loss Vanilla" style="width:200px;height:200px;">
     </td>
   </tr>
 </table>
