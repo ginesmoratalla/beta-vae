@@ -1,18 +1,13 @@
-import enum
 import sys
-from matplotlib import cm
 from rich import print
 import numpy as np
 from torch._prims_common import Tensor
-from torch.nn.modules import conv
 from tqdm import tqdm
-import matplotlib.pyplot as plt
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torchsummary import summary
-from torchvision.utils import save_image, make_grid
+from torchvision.utils import make_grid
 from torch.utils.tensorboard import SummaryWriter
 
 # Project imports
@@ -95,9 +90,11 @@ def train_model(run_path):
 
             # For TensorBoard
             if counter % 300 == 0:
+
                 epoch_kl_div.append(kl_div.detach().cpu().numpy())
                 epoch_reconstruction_loss.append(reconstruction_loss.detach().cpu().numpy())
                 epoch_loss.append(loss.detach().cpu().numpy())
+
                 train_rec, conv_layer_output = log_tensorboard(
                     writer,
                     fixed_train_batch,
@@ -205,14 +202,14 @@ def log_tensorboard(
     writer.add_image(f'Image Reconstructions {mode}', img_grid, step)
 
     # Store conv layer output as image grid
-    # Layer dims: [out_channels, in_channels, kernel, kernel]
+    # Layer dims: [batch, filters, kernel, kernel]
     conv_layers_gird = []
     for i, layer in enumerate(conv_layers):
         layer_stacked_grid = []
         # Iter through every filter in a layer
         for j in range(layer.shape[1]):
             filter = layer[:, j, :, :]
-            filter = torch.mean(filter, dim=0).unsqueeze(0)  # Mean over the whole batch
+            filter = torch.mean(filter, dim=0, keepdim=True)  # Mean over the whole batch
             layer_stacked_grid.append(filter)
 
         layer_stacked_grid = torch.stack(layer_stacked_grid, dim=0)
