@@ -16,8 +16,9 @@ in pkgs.mkShell {
   shellHook = ''
     echo "NIX Environment with CUDA availability"
     export CUDA_PATH=${pkgs.cudatoolkit}
-    export LD_LIBRARY_PATH=${pkgs.stdenv.cc.cc.lib}/lib/:/run/opengl-driver/lib/:$LD_LIBRARY_PATH
-    echo $CUDA_PATH
-    echo $LD_LIBRARY_PATH
+    export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath [pkgs.zlib]}:$LD_LIBRARY_PATH"
+    export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib/:/run/opengl-driver/lib/:$LD_LIBRARY_PATH"
+    echo "Cuda path: $CUDA_PATH"
+    echo "LD_LIBRARY path: $LD_LIBRARY_PATH"
   ''; 
 }

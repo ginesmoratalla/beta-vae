@@ -15,10 +15,12 @@ from loaders.dataloader import get_mnist_loaders
 from models.vae import VariationalAutoEncoder
 from utils.visualization import gif_from_tensors
 
-device = "mps"
+device = "cuda"
 Z_DIM = 70
 NUM_CLASSES = 10 
 SAMPLES_PER_CLASS = 5 
+CHANNELS = 1 
+IMG_SIZE = 28 
 BATCH_SIZE=64
 
 # --- Data & Architecture ---
@@ -96,19 +98,24 @@ def inference_per_class():
         )
 
     del per_class_dictionary
-    unorganized_batch = torch.empty(0, SAMPLES_PER_CLASS, Z_DIM)
+    unorganized_batch = torch.empty(0, SAMPLES_PER_CLASS, CHANNELS, IMG_SIZE, IMG_SIZE).to(device)
     for label in per_class_dictionary_z.keys():
         mu = per_class_dictionary_z[label][0]
         sigma = per_class_dictionary_z[label][1]
         z_samples = torch.normal(
-            mean=mu.expand(5, -1),
-            std=sigma.expand(5, -1)
+            mean=mu.expand(SAMPLES_PER_CLASS, -1),
+            std=sigma.expand(SAMPLES_PER_CLASS, -1)
         )
         reconstructed_batch, _, _ = model.decode(z_samples)
         unorganized_batch = torch.cat((unorganized_batch, reconstructed_batch.unsqueeze(0)), dim=0)
+        # print(f'[Z SAMPLING] Class {label}: Sampled tensor size {reconstructed_batch.shape}')
+        # print(f'[Z SAMPLING] Class {label}: Unorganized tensor size {unorganized_batch.shape}\n')
 
     # [10, 5, 70]
     organized_batch = unorganized_batch.flatten(0, 1)
+    print("[UNORGANIZED FINAL BATCH OF IMAGES]: ", unorganized_batch.shape)
+    print("[ORGANIZED FINAL BATCH OF IMAGES]: ", organized_batch.shape)
+
     img_grid = make_grid(organized_batch, nrow=10)
     gif_from_tensors(
         img_sequence_list=[img_grid],
