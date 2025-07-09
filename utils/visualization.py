@@ -13,7 +13,7 @@ def gif_from_tensors(
         frame_duration=0.5,
         gif_name='placeholder.gif'):
 
-    print("Generating reconstruction GIF...")
+    print("Generating assets...")
     transform = transforms.ToPILImage()
     store_path = path + "/res"
     os.makedirs(store_path, exist_ok=True)

@@ -8,7 +8,7 @@ def save_model(model, model_path):
 
     model_name = model_path + "/model.pt"
     model_path = os.path.join(model_path, model_name)
-    torch.save(model, model_path)
+    torch.save(model.state_dict(), model_path)
     print("[MODEL SAVED]", model_path)
 
 

@@ -1,42 +1,72 @@
+from os.path import join
+from posixpath import abspath
+from sys import path
+from numpy import mean, rec
 import torch
 import torch.nn as nn
+import os
 
+from torchvision.utils import make_grid
 from loaders.dataloader import get_mnist_loaders
+from models.vae import VariationalAutoEncoder
+from utils.visualization import gif_from_tensors
 
-device = "cuda"
-SAMPLES_PER_CLASS=8
+device = "mps"
+Z_DIM = 70
 BATCH_SIZE=64
 
 # --- Data & Architecture ---
-model = torch.load('runs/vanilla-vae/')
-loader, _ = get_mnist_loaders(batch_size=BATCH_SIZE) 
-# --- Data & Architecture ---
+root_path = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    '../',
+)
+model_path = os.path.join(
+    root_path,
+    'runs/vanilla-vae/15_epochs/model.pt'
+)
+model = torch.load(model_path, weights_only=False, map_location=device).to(device)
 
 
 @torch.no_grad()
 def inference():
-
-    print("[EVAL] Checking accuracy on test dataset")
-
+    """
+    Decoder generates images by sampling z ~ N(0, 1)
+    """
+    print("[EVAL] Sampling from the prior")
     model.eval()
-    num_correct = 0
-    num_samples = 0
+    mu = torch.zeros(BATCH_SIZE, Z_DIM)
+    sigma = torch.ones(BATCH_SIZE, Z_DIM)
+    z_samples = torch.normal(mean=mu, std=sigma).to(device)
+    reconstructed_batch, _, _ = model.decode(z_samples)
+    img_grid = make_grid(reconstructed_batch, nrow=8)
 
-    # Get mean and std of every class in the dataset
-    for x, y in loader:
-        y = y.to(device)
-        x = x.float().to(device)
-
-        scores = model(x)
-        predictions = torch.argmax(scores, dim=1)
-        num_correct += (predictions == y).sum()
-        num_samples += predictions.size(0)
-
-    print(
-        f"[EVAL] Got correct {
-          num_correct} / {num_samples} --> Accuracy {(float(num_correct)/float(num_samples))*100:.2f}%"
+    gif_from_tensors(
+        img_sequence_list=[img_grid],
+        path=root_path,
+        frame_duration=0.5,
+        gif_name='samples.png',
     )
-    print()
+
+    model.train()
+
+@torch.no_grad()
+def inference_per_class():
+
+
+    print("[EVAL] Sampling from the prior")
+    model.eval()
+    mu = torch.zeros(BATCH_SIZE, Z_DIM)
+    sigma = torch.ones(BATCH_SIZE, Z_DIM)
+    z_samples = torch.normal(mean=mu, std=sigma).to(device)
+    reconstructed_batch, _, _ = model.decode(z_samples)
+    img_grid = make_grid(reconstructed_batch, nrow=8)
+
+    gif_from_tensors(
+        img_sequence_list=[img_grid],
+        path=root_path,
+        frame_duration=0.5,
+        gif_name='samples.png',
+    )
 
     model.train()
 
