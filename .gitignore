@@ -13,6 +13,7 @@ uv.lock
 *.DS_Store
 
 dataset/
+plots/
 
 # Distribution / packaging
 .Python

@@ -1,7 +1,6 @@
 import sys
 from rich import print
 import numpy as np
-from torch._prims_common import Tensor
 from tqdm import tqdm
 
 import torch
@@ -31,7 +30,7 @@ model = VariationalAutoEncoder(
     z_dim=Z_DIM,
     flat_dim=IMAGE_FLAT_DIM
 ).to(device)
-train_loader, val_loader = get_mnist_loaders(batch_size=BATCH_SIZE)
+train_loader, val_loader = get_mnist_loaders(batch_size=BATCH_SIZE) 
 loss_fn = nn.BCELoss(reduction="sum")
 optimizer = optim.Adam(params=model.parameters(), lr=LR)
 
@@ -188,7 +187,7 @@ def log_tensorboard(
         writer: SummaryWriter,
         batch: torch.Tensor,
         step: int,
-        conv_layers: tuple[Tensor, ...],
+        conv_layers: tuple[torch.Tensor, ...],
         validation=True,
 ):
     mode = "(Validation)" if validation else "(Training)"
@@ -251,7 +250,6 @@ def filter_checkpoint(step: int, writer: SummaryWriter, conv_layers={}):
 
 
 if __name__ == "__main__":
-    # filter_checkpoint()
     RUN_PATH = sys.argv[1]
     print("[PRE-TRAIN] Training model...")
     print("==" * 20)
