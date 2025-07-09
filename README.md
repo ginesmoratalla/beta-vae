@@ -52,14 +52,21 @@
 <table>
     <tr>
         <td align="center">
-            Samples from Inference - Vanilla VAE<br>$\mathbf{z} \sim \mathcal{N}(0, \boldsymbol{I})$
         </td>
         <td align="center">
-            Samples from Inference - β-VAE<br>$\mathbf{z} \sim \mathcal{N}(0, \boldsymbol{I})$
+            Samples from Inference<br>$\mathbf{z} \sim \mathcal{N}(0, \boldsymbol{I})$
+        </td>
+        <td align="center">
+            Samples from Inference<br>per-class
         </td>
     </tr>
 
+    
+
   <tr>
+    <td align="center">
+      Vanilla VAE
+    </td>
     <td align="center">
       <img src="res/vanilla_samples.png" alt="Loss Vanilla" style="width:200px;height:200px;">
     </td>
