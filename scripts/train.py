@@ -21,9 +21,9 @@ BETA = 1
 Z_DIM = 70
 IMAGE_FLAT_DIM = 64*4*4
 LR = 3e-4
-NUM_EPOCHS = 2
-BATCH_SIZE = 128
-device = "mps"
+NUM_EPOCHS = 15
+BATCH_SIZE = 64
+device = "cuda"
 
 # --- Model Setup ---
 model = VariationalAutoEncoder(

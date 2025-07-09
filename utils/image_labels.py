@@ -5,7 +5,7 @@ import cv2
 # import numpy as np
 
 # --- Initial setup ---
-device = "mps"
+device = "cuda"
 dataset = []
 IMG_SIZE = 150
 ROOT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
