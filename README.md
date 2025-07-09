@@ -51,6 +51,24 @@
 
 <table>
     <tr>
+        <td align="center">
+            Samples from Inference - Vanilla VAE<br>$z \sim \mathcal{N}(0, \boldsymbol{I})$
+        </td>
+        <td align="center">
+        </td>
+    </tr>
+
+  <tr>
+    <td align="center">
+      <img src="res/vanilla_samples.png" alt="Loss Vanilla" style="width:330px;height:200px;">
+    </td>
+    <td align="center">
+    </td>
+  </tr>
+</table>
+
+<table>
+    <tr>
     <td align="center">
       Loss
     </td>

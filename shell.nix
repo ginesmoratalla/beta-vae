@@ -20,5 +20,4 @@ in pkgs.mkShell {
     echo $CUDA_PATH
     echo $LD_LIBRARY_PATH
   ''; 
-
 }
