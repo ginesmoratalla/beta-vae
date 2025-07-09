@@ -64,13 +64,13 @@
 
   <tr>
     <td align="center">
-      <img src="res/vanilla_loss.png" alt="Loss Vanilla" style="width:200px;height:200px;">
+      <img src="res/vanilla_loss.png" alt="Loss Vanilla" style="width:330px;height:230px;">
     </td>
     <td align="center">
-      <img src="res/vanilla_reconstruction.png" alt="Reconstruction Vanilla" style="width:200px;height:200px;">
+      <img src="res/vanilla_reconstruction.png" alt="Reconstruction Vanilla" style="width:330px;height:230px;">
     </td>
     <td align="center">
-      <img src="res/vanilla_kl_div.png" alt="KL Vanilla" style="width:200px;height:200px;">
+      <img src="res/vanilla_kl_div.png" alt="KL Vanilla" style="width:330px;height:230px;">
     </td>
   </tr>
 </table>
