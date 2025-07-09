@@ -57,7 +57,7 @@
             Samples from Inference<br>$\mathbf{z} \sim \mathcal{N}(0, \boldsymbol{I})$
         </td>
         <td align="center">
-            Samples from Inference (per-class)<br>$\mathbf{z} \sim \mathcal{N}(\boldsymbol{\mu}_{\text{class}}, \boldsymbol{\sigma}_{\text{class}}$
+            Samples from Inference (per-class)<br>$\mathbf{z} \sim \mathcal{N}(\boldsymbol{\mu}_{\text{class}}, \boldsymbol{\sigma}_{\text{class}})$
         </td>
     </tr>
   <tr>

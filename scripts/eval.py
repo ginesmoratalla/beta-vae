@@ -110,7 +110,7 @@ def inference_per_class():
         unorganized_batch = torch.cat((unorganized_batch, reconstructed_batch.unsqueeze(0)), dim=0)
 
     # [Class=10, B=5, C=1, H=28, W=28]
-    organized_batch = unorganized_batch.flatten(1)
+    organized_batch = unorganized_batch.transpose(0, 1).flatten(0, 1)
     print("[UNORGANIZED FINAL BATCH OF IMAGES]: ", unorganized_batch.shape)
     print("[ORGANIZED FINAL BATCH OF IMAGES]: ", organized_batch.shape)
 
