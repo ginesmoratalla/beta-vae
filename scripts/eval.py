@@ -18,7 +18,7 @@ from utils.visualization import gif_from_tensors
 device = "cuda"
 Z_DIM = 70
 NUM_CLASSES = 10 
-SAMPLES_PER_CLASS = 5 
+SAMPLES_PER_CLASS = 10
 CHANNELS = 1 
 IMG_SIZE = 28 
 BATCH_SIZE=64
@@ -108,11 +108,9 @@ def inference_per_class():
         )
         reconstructed_batch, _, _ = model.decode(z_samples)
         unorganized_batch = torch.cat((unorganized_batch, reconstructed_batch.unsqueeze(0)), dim=0)
-        # print(f'[Z SAMPLING] Class {label}: Sampled tensor size {reconstructed_batch.shape}')
-        # print(f'[Z SAMPLING] Class {label}: Unorganized tensor size {unorganized_batch.shape}\n')
 
-    # [10, 5, 70]
-    organized_batch = unorganized_batch.flatten(0, 1)
+    # [Class=10, B=5, C=1, H=28, W=28]
+    organized_batch = unorganized_batch.flatten(1)
     print("[UNORGANIZED FINAL BATCH OF IMAGES]: ", unorganized_batch.shape)
     print("[ORGANIZED FINAL BATCH OF IMAGES]: ", organized_batch.shape)
 
@@ -121,7 +119,7 @@ def inference_per_class():
         img_sequence_list=[img_grid],
         path=root_path,
         frame_duration=0.5,
-        gif_name='samples_per_class.png',
+        gif_name='vanilla_samples_per_class.png',
     )
 
     model.train()
