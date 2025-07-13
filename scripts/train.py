@@ -1,6 +1,7 @@
 import sys
 from rich import print
 import numpy as np
+from torch._prims_common import Dim
 from tqdm import tqdm
 
 import torch
@@ -13,7 +14,7 @@ from torch.utils.tensorboard import SummaryWriter
 from loaders.dataloader import get_mnist_loaders
 from models.vae import VariationalAutoEncoder
 from utils.model_handler import save_model
-from utils.visualization import gif_from_tensors
+from utils.visualization import gif_from_tensors, PCA
 
 # --- Hyperparameters ---
 BETA = 1
@@ -49,8 +50,11 @@ def train_model(run_path):
     conv_layer_timestamps = get_conv_dict()
     train_reconstruction_evolution_gif = []
     validation_reconstruction_evolution_gif = []
+
     fixed_train_batch = next(iter(train_loader))  # For reconstruction recording
     fixed_val_batch = next(iter(val_loader))      # For reconstruction recording
+    pca_batch = [] # TODO: grab like 1000 samples from the validation loader
+
     writer = SummaryWriter(run_path + "/tensorboard-logs")
     writer.add_graph(model, torch.rand(BATCH_SIZE, 1, 28, 28).to(device))
 
@@ -160,6 +164,11 @@ def train_model(run_path):
 
 @torch.no_grad()
 def get_conv_dict() -> dict:
+    """
+    Creates dictionary that
+    gets outputs of all the convolutional layers
+    in the VAE
+    """
     cdict = {}
     model.eval()
     i = 0
