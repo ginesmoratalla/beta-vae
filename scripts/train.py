@@ -1,4 +1,5 @@
 import sys
+from matplotlib.pyplot import cla
 from rich import print
 import numpy as np
 from torch._prims_common import Dim
@@ -23,6 +24,8 @@ IMAGE_FLAT_DIM = 64*4*4
 LR = 3e-4
 NUM_EPOCHS = 15
 BATCH_SIZE = 64
+CHANNELS = 1
+IMG_SIZE = 28 
 device = "cuda"
 
 # --- Model Setup ---
@@ -53,7 +56,16 @@ def train_model(run_path):
 
     fixed_train_batch = next(iter(train_loader))  # For reconstruction recording
     fixed_val_batch = next(iter(val_loader))      # For reconstruction recording
-    pca_batch = [] # TODO: grab like 1000 samples from the validation loader
+
+    pca_y = torch.empty(0)
+    pca_x = torch.empty(0, CHANNELS, IMG_SIZE, IMG_SIZE)
+    for i, (x, y) in enumerate(val_loader):
+        if i == 7:
+            break
+        pca_y = torch.cat((pca_y, y))
+        pca_x = torch.cat((pca_x, x), dim=0)
+
+    pca_batch = (pca_x, pca_y)
 
     writer = SummaryWriter(run_path + "/tensorboard-logs")
     writer.add_graph(model, torch.rand(BATCH_SIZE, 1, 28, 28).to(device))
@@ -93,7 +105,6 @@ def train_model(run_path):
 
             # For TensorBoard
             if counter % 300 == 0:
-
                 epoch_kl_div.append(kl_div.detach().cpu().numpy())
                 epoch_reconstruction_loss.append(reconstruction_loss.detach().cpu().numpy())
                 epoch_loss.append(loss.detach().cpu().numpy())
@@ -135,6 +146,9 @@ def train_model(run_path):
         writer.add_scalar('KL divergence std (per batch)', np.std(epoch_kl_div), epoch)
         writer.add_scalar('Reconstruction loss mean (per batch)', np.mean(epoch_reconstruction_loss), epoch)
         writer.add_scalar('Reconstruction loss std (per batch)', np.std(epoch_reconstruction_loss), epoch)
+
+        classes = torch.rand(10)
+        PCA(model, pca_batch, epoch=epoch, path=run_path)
 
     writer.close()
     print("Model finished training.\nLoging metrics...")
