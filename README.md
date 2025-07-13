@@ -60,7 +60,7 @@
             Samples from Inference (per-class)<br>$\mathbf{z} \sim \mathcal{N}(\boldsymbol{\mu}_{\text{class}}, \boldsymbol{\sigma}_{\text{class}})$
         </td>
         <td align="center">
-            3D Principal Component Analysis on $\mathbf{z}$ ($\mathbf{\mu_z}$)
+            3D Principal Component Analysis on $\mathbf{z}$ ($\mathbf{\mu_z}$)<br>$\mathbf{z}\in\mathbb{R}^{70}$
         </td>
     </tr>
   <tr>
