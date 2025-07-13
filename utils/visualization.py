@@ -87,4 +87,8 @@ def PCA(model, pca_batch: tuple[torch.Tensor, torch.Tensor], epoch, path: str):
         os.makedirs(path)
     plt.savefig(path+f'/pca_{epoch}.png')
 
+    if epoch == 14:
+        torch.save(transformed_samples.cpu(), path+'/batch.pt')
+        torch.save(pca_batch[1].cpu(), path+'/class_batch.pt')
+
     model.train()
