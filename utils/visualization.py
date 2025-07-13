@@ -74,7 +74,7 @@ def PCA(model, pca_batch: tuple[torch.Tensor, torch.Tensor], epoch, path: str):
     for pair in zip(MNIST_CLASSES, COLORS):
         i = int(pair[0])
         mask = pca_batch[1] == i
-        i_samples = transformed_samples[mask]
+        i_samples = transformed_samples[mask].cpu()
         ax.scatter(i_samples[:, 0], i_samples[:, 1], i_samples[:, 2], c=pair[1], label=pair[0])
 
     ax.set_xlabel('Principal Component 1')
@@ -82,7 +82,9 @@ def PCA(model, pca_batch: tuple[torch.Tensor, torch.Tensor], epoch, path: str):
     ax.set_zlabel('Principal Component 3')
     ax.legend()
 
-    os.makedirs(path)
-    plt.savefig(path+f'pca_{epoch}.png')
+    path = os.path.join(path, 'pca')
+    if not os.path.exists(path):
+        os.makedirs(path)
+    plt.savefig(path+f'/pca_{epoch}.png')
 
     model.train()

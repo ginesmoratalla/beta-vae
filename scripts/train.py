@@ -65,7 +65,7 @@ def train_model(run_path):
         pca_y = torch.cat((pca_y, y))
         pca_x = torch.cat((pca_x, x), dim=0)
 
-    pca_batch = (pca_x, pca_y)
+    pca_batch = (pca_x.to(device), pca_y.to(device))
 
     writer = SummaryWriter(run_path + "/tensorboard-logs")
     writer.add_graph(model, torch.rand(BATCH_SIZE, 1, 28, 28).to(device))
