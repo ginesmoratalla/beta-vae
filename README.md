@@ -78,9 +78,6 @@
       <td align="center">
           Samples from Inference (per-class)<br>$\mathbf{z} \sim \mathcal{N}(\boldsymbol{\mu}_{\text{class}}, \boldsymbol{\sigma}_{\text{class}})$
       </td>
-      <td align="center">
-          3D Principal Component Analysis on $\mathbf{z}$ ($\mathbf{\mu_z}$)<br>$\mathbf{z}\in\mathbb{R}^{70}$
-      </td>
   </tr>
   
   <tr>
@@ -92,9 +89,6 @@
     </td>
     <td align="center">
       <img src="res/vanilla_samples_per_class.png" alt="Loss Vanilla" style="width:300px;height:300px;">
-    </td>
-    <td align="center">
-      <img src="res/pca.gif" alt="PCA Vanilla" style="width:300px;height:300px;">
     </td>
   </tr>
 
@@ -108,8 +102,6 @@
     <td align="center">
       <img src="res/beta_samples_per_class.png" alt="Loss Vanilla" style="width:300px;height:300px;">
     </td>
-    <td align="center">
-    </td>
   </tr>
 
   <tr>
@@ -121,8 +113,6 @@
     </td>
     <td align="center">
       <img src="res/beta_1_third_samples_per_class.png" alt="Loss Vanilla" style="width:300px;height:300px;">
-    </td>
-    <td align="center">
     </td>
   </tr>
   
@@ -153,10 +143,16 @@
     <td align="center">
         Image sampling transition $\beta$-VAE
     </td>
+      <td align="center">
+          3D Principal Component Analysis on $\mathbf{z}$ ($\mathbf{\mu_z}$)<br>$\mathbf{z}\in\mathbb{R}^{70}$
+      </td>
   </tr>
   <tr>
     <td align="center">
       <img src="res/number_transitions.gif" alt="Reconstruction Vanilla" style="width:330px;height:200px;">
+    </td>
+    <td align="center">
+      <img src="res/pca.gif" alt="PCA Vanilla" style="width:300px;height:300px;">
     </td>
   </tr>
 </table>
