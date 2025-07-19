@@ -17,6 +17,9 @@ IMG_SIZE = 28
 IMAGE_FLAT_DIM = 64*4*4
 BATCH_SIZE=64
 
+INFERENCE_NAME="beta_1_third.png"
+CLASS_INFERENCE_NAME="beta_1_third_samples_per_class.png"
+
 # --- Data & Architecture ---
 root_path = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
@@ -24,7 +27,7 @@ root_path = os.path.join(
 )
 model_path = os.path.join(
     root_path,
-    'runs/beta-vae/beta_0.3_incr/model.pt'
+    'runs/beta-vae/beta_1_third/model.pt'
 )
 model_weights = torch.load(model_path, weights_only=False, map_location=device)
 model = VariationalAutoEncoder(
@@ -53,7 +56,7 @@ def inference():
         img_sequence_list=[img_grid],
         path=root_path,
         frame_duration=0.5,
-        gif_name='samples.png',
+        gif_name=INFERENCE_NAME,
     )
 
     model.train()
@@ -119,7 +122,7 @@ def inference_per_class():
         img_sequence_list=[img_grid],
         path=root_path,
         frame_duration=0.5,
-        gif_name='beta_samples_per_class.png',
+        gif_name=CLASS_INFERENCE_NAME,
     )
 
     model.train()

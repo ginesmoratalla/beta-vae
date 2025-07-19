@@ -134,14 +134,14 @@ def train_model(run_path):
                         f"Epoch [{epoch+1}/{NUM_EPOCHS}], "
                         f"Step [{i+1}/{n_total_steps}], "
                         f"Loss (per sample) {loss.item():.4f}, "
-                        f"BCELoss (per batch) {reconstruction_loss:.4f}, "
+                        f"Reconstruction Loss BCE (per batch) {reconstruction_loss:.4f}, "
                         f"KL_Div: (per batch) {kl_div:.4f}"
                       )
 
             counter += 1
 
-        BETA += 0.3
-        # if not epoch > 2 * (NUM_EPOCHS / 3):
+        if not epoch < 10:
+            BETA += 0.3
 
         # TensorBoard Checkpoint
         writer.add_scalar('training loss mean (per batch)', np.mean(epoch_loss), epoch)
