@@ -9,7 +9,7 @@ from torchvision import transforms
 
 NUM_PC = 3
 MNIST_CLASSES = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-COLORS = ['black', 'pink', 'blue', 'red', 'orange', 'purple', 'brown', 'yellow', 'cyan', 'magenta']
+COLORS = ['black', 'pink', 'blue', 'red', 'orange', 'purple', 'white', 'yellow', 'cyan', 'magenta']
 
 def gif_from_tensors(
         img_sequence_list,

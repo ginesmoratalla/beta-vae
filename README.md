@@ -44,12 +44,18 @@
     <td align="center">
       $\beta$-VAE (0.3 $\beta$ incremental)
     <td align="center">
+      <img src="res/beta_training_reconstruction.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
     </td>
     <td align="center">
+      <img src="res/beta_validation_reconstruction.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
     </td>
     <td align="center">
+      <img src="res/beta_conv1_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
+      <img src="res/beta_conv2_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
     </td>
     <td align="center">
+      <img src="res/beta_conv3_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
+      <img src="res/beta_conv4_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
     </td>
   </tr>
 
@@ -120,10 +126,10 @@
 
   <tr>
     <td align="center">
-      <img src="res/vanilla_reconstruction.png" alt="Reconstruction Vanilla" style="width:330px;height:200px;">
+      <img src="res/reconstruction_loss.png" alt="Reconstruction Vanilla" style="width:330px;height:200px;">
     </td>
     <td align="center">
-      <img src="res/vanilla_kl_div.png" alt="KL Vanilla" style="width:330px;height:200px;">
+      <img src="res/kl_div.png" alt="KL Vanilla" style="width:330px;height:200px;">
     </td>
   </tr>
 </table>
