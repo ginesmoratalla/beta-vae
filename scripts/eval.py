@@ -90,7 +90,7 @@ def inference_per_class():
                 label_mu = torch.cat((mu, label_mu), dim=0)
                 label_sigma = torch.cat((sigma, label_sigma), dim=0)
             except Exception:
-                print(f'[ERROR] Batch has weird size {batch.shape}')
+                print(f'[ERROR] Batch has unexpected size {batch.shape}')
                 exit(0)
 
 
@@ -103,12 +103,15 @@ def inference_per_class():
     del per_class_dictionary
     unorganized_batch = torch.empty(0, SAMPLES_PER_CLASS, CHANNELS, IMG_SIZE, IMG_SIZE).to(device)
     for label in per_class_dictionary_z.keys():
+
         mu = per_class_dictionary_z[label][0]
         sigma = per_class_dictionary_z[label][1]
+
         z_samples = torch.normal(
             mean=mu.expand(SAMPLES_PER_CLASS, -1),
             std=sigma.expand(SAMPLES_PER_CLASS, -1)
         )
+
         reconstructed_batch, _, _ = model.decode(z_samples)
         unorganized_batch = torch.cat((unorganized_batch, reconstructed_batch.unsqueeze(0)), dim=0)
 
@@ -124,10 +127,9 @@ def inference_per_class():
         frame_duration=0.5,
         gif_name=CLASS_INFERENCE_NAME,
     )
-
     model.train()
 
 
 if __name__ == "__main__":
-    inference()
+    # inference()
     inference_per_class()

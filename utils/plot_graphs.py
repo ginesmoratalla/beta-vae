@@ -3,7 +3,7 @@ import os
 import matplotlib.pyplot as plt
 
 root_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
-colors = ["blue", "orange", "pink", "green"]
+colors = ["blue", "orange", "pink", "green", "cyan"]
 
 # Load CSV files Reconstruction loss 
 plots_rec = {
@@ -11,6 +11,7 @@ plots_rec = {
     1: ("/runs/beta-vae/beta_0.3_incr/plots/reconstruction_loss_mean.csv", "/runs/beta-vae/beta_0.3_incr/plots/reconstruction_loss_stdev.csv", "β=0.3 incremental"),
     2: ("/runs/beta-vae/beta_5/plots/reconstruction_loss_mean.csv", "/runs/beta-vae/beta_5/plots/reconstruction_loss_stdev.csv", "β=5"),
     3: ("/runs/beta-vae/beta_20/plots/reconstruction_loss_mean.csv", "/runs/beta-vae/beta_20/plots/reconstruction_loss_stdev.csv", "β=20"),
+    4: ("/runs/beta-vae/beta_1_third/plots/reconstruction_loss_mean.csv", "/runs/beta-vae/beta_1_third/plots/reconstruction_loss_stdev.csv", "β=0.3 incremental +10 epochs"),
 }
 
 plots_kl = {
@@ -18,6 +19,7 @@ plots_kl = {
     1: ("/runs/beta-vae/beta_0.3_incr/plots/kl_div_mean.csv", "/runs/beta-vae/beta_0.3_incr/plots/kl_div_stdev.csv", "β=0.3 incremental"),
     2: ("/runs/beta-vae/beta_5/plots/kl_div_mean.csv", "/runs/beta-vae/beta_5/plots/kl_div_stdev.csv", "β=5"),
     3: ("/runs/beta-vae/beta_20/plots/kl_div_mean.csv", "/runs/beta-vae/beta_20/plots/kl_div_stdev.csv", "β=20"),
+    4: ("/runs/beta-vae/beta_1_third/plots/kl_div_mean.csv", "/runs/beta-vae/beta_1_third/plots/kl_div_stdev.csv", "β=0.3 incremental +10 epochs"),
 }
 
 

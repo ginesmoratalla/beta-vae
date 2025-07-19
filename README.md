@@ -111,6 +111,20 @@
     <td align="center">
     </td>
   </tr>
+
+  <tr>
+    <td align="center">
+      $\beta$-VAE (0.3 $\beta$ incremental +10 epochs)
+    </td>
+    <td align="center">
+      <img src="res/beta_1_third.png" alt="Samples Vanilla" style="width:200px;height:200px;">
+    </td>
+    <td align="center">
+      <img src="res/beta_1_third_samples_per_class.png" alt="Loss Vanilla" style="width:300px;height:300px;">
+    </td>
+    <td align="center">
+    </td>
+  </tr>
   
 </table>
 
@@ -130,6 +144,19 @@
     </td>
     <td align="center">
       <img src="res/kl_div.png" alt="KL Vanilla" style="width:330px;height:200px;">
+    </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td align="center">
+        Image sampling transition $\beta$-VAE
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="res/number_transitions.gif" alt="Reconstruction Vanilla" style="width:330px;height:200px;">
     </td>
   </tr>
 </table>
