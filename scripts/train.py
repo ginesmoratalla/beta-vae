@@ -19,10 +19,10 @@ from utils.visualization import gif_from_tensors, PCA
 
 # --- Hyperparameters ---
 BETA = 1
-Z_DIM = 70
+Z_DIM = 60
 IMAGE_FLAT_DIM = 64*4*4
 LR = 3e-4
-NUM_EPOCHS = 15
+NUM_EPOCHS = 20
 BATCH_SIZE = 64
 CHANNELS = 1
 IMG_SIZE = 28 
@@ -50,6 +50,7 @@ def train_model(run_path):
     kl_div: The sum over all latent dimensions z_i AND over each
     batch x[0] of the KL divergence between q_theta(z|x) and p(z) = N(0, I).
     """
+    global BETA
     conv_layer_timestamps = get_conv_dict()
     train_reconstruction_evolution_gif = []
     validation_reconstruction_evolution_gif = []
@@ -132,12 +133,15 @@ def train_model(run_path):
                 print(
                         f"Epoch [{epoch+1}/{NUM_EPOCHS}], "
                         f"Step [{i+1}/{n_total_steps}], "
-                        f"Loss {loss.item():.4f},"
-                        f"BCELoss {reconstruction_loss:.4f},"
-                        f"KL_Div: {kl_div:.4f}"
+                        f"Loss (per sample) {loss.item():.4f}, "
+                        f"BCELoss (per batch) {reconstruction_loss:.4f}, "
+                        f"KL_Div: (per batch) {kl_div:.4f}"
                       )
 
             counter += 1
+
+        BETA += 0.3
+        # if not epoch > 2 * (NUM_EPOCHS / 3):
 
         # TensorBoard Checkpoint
         writer.add_scalar('training loss mean (per batch)', np.mean(epoch_loss), epoch)

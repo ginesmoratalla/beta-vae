@@ -9,11 +9,12 @@ from models.vae import VariationalAutoEncoder
 from utils.visualization import gif_from_tensors
 
 device = "cuda"
-Z_DIM = 70
+Z_DIM = 60
 NUM_CLASSES = 10 
 SAMPLES_PER_CLASS = 10
 CHANNELS = 1 
 IMG_SIZE = 28 
+IMAGE_FLAT_DIM = 64*4*4
 BATCH_SIZE=64
 
 # --- Data & Architecture ---
@@ -23,9 +24,15 @@ root_path = os.path.join(
 )
 model_path = os.path.join(
     root_path,
-    'runs/vanilla-vae/15_epochs/model.pt'
+    'runs/beta-vae/beta_0.3_incr/model.pt'
 )
-model = torch.load(model_path, weights_only=False, map_location=device).to(device)
+model_weights = torch.load(model_path, weights_only=False, map_location=device)
+model = VariationalAutoEncoder(
+    in_channels=1,
+    z_dim=Z_DIM,
+    flat_dim=IMAGE_FLAT_DIM
+).to(device)
+model.load_state_dict(model_weights)
 loader, _ = get_mnist_loaders(batch_size=BATCH_SIZE) 
 
 
@@ -112,12 +119,12 @@ def inference_per_class():
         img_sequence_list=[img_grid],
         path=root_path,
         frame_duration=0.5,
-        gif_name='vanilla_samples_per_class.png',
+        gif_name='beta_samples_per_class.png',
     )
 
     model.train()
 
 
 if __name__ == "__main__":
-    # inference()
+    inference()
     inference_per_class()
