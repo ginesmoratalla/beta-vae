@@ -1,3 +1,4 @@
+from functools import reduce
 import torch
 from torch import nn
 from torch.nn.modules import conv
@@ -5,8 +6,10 @@ from torch.nn.modules import conv
 
 class VariationalAutoEncoder(nn.Module):
 
-    def __init__(self, in_channels, z_dim=60, flat_dim=512) -> None:
+    def __init__(self, in_channels, z_dim=60, flat_dim_tuple=(64, 4, 4)) -> None:
         super(VariationalAutoEncoder, self).__init__()
+
+        self.flat_dim = reduce((lambda x, y: x * y), flat_dim_tuple)
 
         # ENCODER
         self.conv1 = nn.Conv2d(in_channels=in_channels, out_channels=32, kernel_size=3)
@@ -18,7 +21,7 @@ class VariationalAutoEncoder(nn.Module):
         self.maxpool2 = nn.MaxPool2d(kernel_size=3, stride=3)
         self.flatten = nn.Flatten()
 
-        self.fc1 = nn.Linear(in_features=flat_dim, out_features=128)
+        self.fc1 = nn.Linear(in_features=self.flat_dim, out_features=128)
         self.bn2 = nn.BatchNorm1d(128)
         self.lkrelu = nn.LeakyReLU()
 
@@ -28,8 +31,8 @@ class VariationalAutoEncoder(nn.Module):
         # DECODER
         self.fc2 = nn.Linear(in_features=z_dim, out_features=128)
         self.bn3 = nn.BatchNorm1d(128)
-        self.fc3 = nn.Linear(in_features=128, out_features=flat_dim)
-        self.unflatten = nn.Unflatten(1, (64, 4, 4))
+        self.fc3 = nn.Linear(in_features=128, out_features=self.flat_dim)
+        self.unflatten = nn.Unflatten(1, flat_dim_tuple)
         self.conv3 = nn.ConvTranspose2d(in_channels=64, out_channels=32, kernel_size=4, stride=3)
         self.conv4 = nn.ConvTranspose2d(in_channels=32, out_channels=in_channels, kernel_size=4, stride=2)
         self.sigmoid = nn.Sigmoid()

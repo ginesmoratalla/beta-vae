@@ -33,5 +33,5 @@ def print_stderr(msg):
 if __name__ == "__main__":
     print_stderr("==" * 20)
     print_stderr("[PIPELINE] Creating directory to store logs...")
-    create_run_path("beta-vae")
+    create_run_path("beta-vae/CelebA")
     print_stderr("[PIPELINE] Log dir created succesfully")

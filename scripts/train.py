@@ -1,8 +1,6 @@
 import sys
-from matplotlib.pyplot import cla
 from rich import print
 import numpy as np
-from torch._prims_common import Dim
 from tqdm import tqdm
 
 import torch
@@ -12,30 +10,32 @@ from torchvision.utils import make_grid
 from torch.utils.tensorboard import SummaryWriter
 
 # Project imports
-from loaders.dataloader import get_mnist_loaders
+from loaders.dataloader import get_mnist_loaders, get_celeba_loaders
 from models.vae import VariationalAutoEncoder
 from utils.model_handler import save_model
 from utils.visualization import gif_from_tensors, PCA
 
 # --- Hyperparameters ---
-BETA = 1
+BETA = 2
 Z_DIM = 60
-IMAGE_FLAT_DIM = 64*4*4
-LR = 3e-4
+IMAGE_FLAT_DIM = (64, 10, 10)
+LR = 1e-3
 NUM_EPOCHS = 20
-BATCH_SIZE = 64
-CHANNELS = 1
-IMG_SIZE = 28 
-device = "cuda"
+BATCH_SIZE = 128
+CHANNELS = 3
+IMG_SIZE = 64
+device = "mps"
 
 # --- Model Setup ---
 model = VariationalAutoEncoder(
-    in_channels=1,
+    in_channels=CHANNELS,
     z_dim=Z_DIM,
-    flat_dim=IMAGE_FLAT_DIM
+    flat_dim_tuple=IMAGE_FLAT_DIM
 ).to(device)
-train_loader, val_loader = get_mnist_loaders(batch_size=BATCH_SIZE) 
-loss_fn = nn.BCELoss(reduction="sum")
+# train_loader, val_loader = get_mnist_loaders(batch_size=BATCH_SIZE) 
+train_loader, val_loader = get_celeba_loaders(batch_size=BATCH_SIZE) 
+# loss_fn = nn.BCELoss(reduction="sum")
+loss_fn = nn.MSELoss(reduction="sum")
 optimizer = optim.Adam(params=model.parameters(), lr=LR)
 
 
@@ -58,6 +58,7 @@ def train_model(run_path):
     fixed_train_batch = next(iter(train_loader))  # For reconstruction recording
     fixed_val_batch = next(iter(val_loader))      # For reconstruction recording
 
+    """
     pca_y = torch.empty(0)
     pca_x = torch.empty(0, CHANNELS, IMG_SIZE, IMG_SIZE)
     for i, (x, y) in enumerate(val_loader):
@@ -67,9 +68,11 @@ def train_model(run_path):
         pca_x = torch.cat((pca_x, x), dim=0)
 
     pca_batch = (pca_x.to(device), pca_y.to(device))
+    """
+
 
     writer = SummaryWriter(run_path + "/tensorboard-logs")
-    writer.add_graph(model, torch.rand(BATCH_SIZE, 1, 28, 28).to(device))
+    writer.add_graph(model, torch.rand(BATCH_SIZE, CHANNELS, IMG_SIZE, IMG_SIZE).to(device))
 
     n_total_steps = len(train_loader)*NUM_EPOCHS
     counter = 0
@@ -140,9 +143,6 @@ def train_model(run_path):
 
             counter += 1
 
-        if not epoch < 10:
-            BETA += 0.3
-
         # TensorBoard Checkpoint
         writer.add_scalar('training loss mean (per batch)', np.mean(epoch_loss), epoch)
         writer.add_scalar('training loss std (per batch)', np.std(epoch_loss), epoch)
@@ -152,7 +152,7 @@ def train_model(run_path):
         writer.add_scalar('Reconstruction loss std (per batch)', np.std(epoch_reconstruction_loss), epoch)
 
         classes = torch.rand(10)
-        PCA(model, pca_batch, epoch=epoch, path=run_path)
+        # PCA(model, pca_batch, epoch=epoch, path=run_path)
 
     writer.close()
     print("Model finished training.\nLoging metrics...")

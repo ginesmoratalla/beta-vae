@@ -5,6 +5,7 @@ description = "Reimplementation of a Beta-VAE"
 readme = "REAME.md"
 requires-python = ">=3.12"
 dependencies = [
+    "gdown>=5.2.0",
     "imageio>=2.37.0",
     "matplotlib>=3.10.3",
     "numpy>=2.3.1",
