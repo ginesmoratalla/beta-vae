@@ -173,10 +173,10 @@
   </tr>
   <tr>
     <td align="center">
-      <img src="res/CelebA/bald-transition.png" alt="Reconstruction Vanilla" style="width:330px;height:200px;">
+      <img src="res/CelebA/bald-transition.png" alt="Reconstruction Vanilla" style="width:330px;height:300px;">
     </td>
     <td align="center">
-      <img src="res/CelebA/gender-transition.png" alt="Reconstruction Vanilla" style="width:330px;height:200px;">
+      <img src="res/CelebA/gender-transition.png" alt="Reconstruction Vanilla" style="width:330px;height:300px;">
     </td>
   </tr>
 
@@ -190,10 +190,10 @@
   </tr>
   <tr>
     <td align="center">
-      <img src="res/CelebA/hair-transition.png" alt="Reconstruction Vanilla" style="width:330px;height:200px;">
+      <img src="res/CelebA/hair-transition.png" alt="Reconstruction Vanilla" style="width:330px;height:300px;">
     </td>
     <td align="center">
-      <img src="res/CelebA/pale_skin-transition.png" alt="Reconstruction Vanilla" style="width:330px;height:200px;">
+      <img src="res/CelebA/pale_skin-transition.png" alt="Reconstruction Vanilla" style="width:330px;height:300px;">
     </td>
   </tr>
 
