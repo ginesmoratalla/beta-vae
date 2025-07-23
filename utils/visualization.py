@@ -28,12 +28,16 @@ def gif_from_tensors(
         img_from_tensor = transform(img)
         img_array.append(img_from_tensor)
 
-    imageio.mimsave(
-        os.path.join(store_path, gif_name),
-        img_array,
-        duration=frame_duration,
-        loop=0
-    )
+    try:
+        imageio.mimsave(
+            os.path.join(store_path, gif_name),
+            img_array,
+            duration=frame_duration,
+            loop=0
+        )
+    except Exception as e:
+        print(f'\nFailed to save image/GIF {gif_name}\nreason {e}')
+
 
 @torch.no_grad()
 def PCA(model, pca_batch: tuple[torch.Tensor, torch.Tensor], epoch, path: str):

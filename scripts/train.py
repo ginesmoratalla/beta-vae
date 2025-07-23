@@ -16,15 +16,15 @@ from utils.model_handler import save_model
 from utils.visualization import gif_from_tensors, PCA
 
 # --- Hyperparameters ---
-BETA = 2
-Z_DIM = 60
-IMAGE_FLAT_DIM = (64, 10, 10)
-LR = 1e-3
+BETA = 1
+Z_DIM = 150
+IMAGE_FLAT_DIM = (32, 7, 7)
+LR = 3e-4
 NUM_EPOCHS = 20
 BATCH_SIZE = 128
 CHANNELS = 3
 IMG_SIZE = 64
-device = "mps"
+device = "cuda"
 
 # --- Model Setup ---
 model = VariationalAutoEncoder(
@@ -32,12 +32,12 @@ model = VariationalAutoEncoder(
     z_dim=Z_DIM,
     flat_dim_tuple=IMAGE_FLAT_DIM
 ).to(device)
-# train_loader, val_loader = get_mnist_loaders(batch_size=BATCH_SIZE) 
 train_loader, val_loader = get_celeba_loaders(batch_size=BATCH_SIZE) 
 # loss_fn = nn.BCELoss(reduction="sum")
 loss_fn = nn.MSELoss(reduction="sum")
 optimizer = optim.Adam(params=model.parameters(), lr=LR)
 
+# train_loader, val_loader = get_mnist_loaders(batch_size=BATCH_SIZE) 
 
 def train_model(run_path):
     """
@@ -151,8 +151,9 @@ def train_model(run_path):
         writer.add_scalar('Reconstruction loss mean (per batch)', np.mean(epoch_reconstruction_loss), epoch)
         writer.add_scalar('Reconstruction loss std (per batch)', np.std(epoch_reconstruction_loss), epoch)
 
-        classes = torch.rand(10)
         # PCA(model, pca_batch, epoch=epoch, path=run_path)
+        # if epoch < NUM_EPOCHS / 2:
+        #    BETA += 0.3
 
     writer.close()
     print("Model finished training.\nLoging metrics...")

@@ -12,29 +12,35 @@ class VariationalAutoEncoder(nn.Module):
         self.flat_dim = reduce((lambda x, y: x * y), flat_dim_tuple)
 
         # ENCODER
-        self.conv1 = nn.Conv2d(in_channels=in_channels, out_channels=32, kernel_size=3)
-        self.bn1 = nn.BatchNorm2d(32)
+        self.enc_conv1 = nn.Conv2d(in_channels=in_channels, out_channels=32, kernel_size=2, stride=1)
+        self.enc_conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=2, stride=2)
+        self.enc_bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU()
-        self.maxpool1 = nn.MaxPool2d(kernel_size=2, stride=2)
+        # self.enc_maxpool1 = nn.MaxPool2d(kernel_size=3, stride=3)
 
-        self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=2)
-        self.maxpool2 = nn.MaxPool2d(kernel_size=3, stride=3)
+        self.enc_conv3 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=2, stride=2)
+        self.enc_conv4 = nn.Conv2d(in_channels=64, out_channels=32, kernel_size=2, stride=2)
         self.flatten = nn.Flatten()
 
-        self.fc1 = nn.Linear(in_features=self.flat_dim, out_features=128)
-        self.bn2 = nn.BatchNorm1d(128)
+        self.enc_fc1 = nn.Linear(in_features=self.flat_dim, out_features=256)
+        self.enc_bn2 = nn.BatchNorm1d(256)
+        self.enc_fc2 = nn.Linear(in_features=256, out_features=128)
         self.lkrelu = nn.LeakyReLU()
 
         self.mu = nn.Linear(in_features=128, out_features=z_dim)
         self.sigma = nn.Linear(in_features=128, out_features=z_dim)
 
         # DECODER
-        self.fc2 = nn.Linear(in_features=z_dim, out_features=128)
-        self.bn3 = nn.BatchNorm1d(128)
-        self.fc3 = nn.Linear(in_features=128, out_features=self.flat_dim)
+        self.dec_fc1 = nn.Linear(in_features=z_dim, out_features=256)
+        self.dec_bn1 = nn.BatchNorm1d(256)
+        self.dec_fc2 = nn.Linear(in_features=256, out_features=self.flat_dim)
         self.unflatten = nn.Unflatten(1, flat_dim_tuple)
-        self.conv3 = nn.ConvTranspose2d(in_channels=64, out_channels=32, kernel_size=4, stride=3)
-        self.conv4 = nn.ConvTranspose2d(in_channels=32, out_channels=in_channels, kernel_size=4, stride=2)
+
+        self.dec_conv1 = nn.ConvTranspose2d(in_channels=32, out_channels=64, kernel_size=3, stride=2)
+        self.dec_conv2 = nn.ConvTranspose2d(in_channels=64, out_channels=64, kernel_size=3, stride=2)
+        self.dec_conv3 = nn.ConvTranspose2d(in_channels=64, out_channels=32, kernel_size=3, stride=2)
+        self.dec_conv4 = nn.ConvTranspose2d(in_channels=32, out_channels=in_channels, kernel_size=2, stride=1)
+
         self.sigmoid = nn.Sigmoid()
 
     def encode(self, x):
@@ -45,14 +51,22 @@ class VariationalAutoEncoder(nn.Module):
 
         z is given followig a per-image gaussian.
         """
-        conv1 = self.conv1(x)
-        x = self.maxpool1(self.relu(self.bn1(conv1)))
-        conv2 = self.conv2(x)
-        x = self.maxpool2(self.relu(conv2))
-        x = self.lkrelu(self.bn2(self.fc1(self.flatten(x))))
+        # print(f'{x.shape}')
+        # print(f'{conv1.shape}')
+        # print(f'{conv2.shape}\n\n')
+
+        conv1 = self.enc_conv1(x)
+        conv2 = self.enc_conv2(conv1)
+        x = self.relu(self.enc_bn1(conv2))
+
+        conv3 = self.enc_conv3(x)
+        conv4 = self.enc_conv4(conv3)
+        x = self.enc_fc1(self.flatten(conv4))
+        x = self.enc_fc2(self.enc_bn2(x))
+        x = self.lkrelu(x)
 
         mu, logvar = self.mu(x), self.sigma(x)
-        return mu, logvar, conv1, conv2
+        return mu, logvar, conv1, conv3
 
     def decode(self, z):
         """
@@ -63,13 +77,18 @@ class VariationalAutoEncoder(nn.Module):
         x_hat is meant to be a reconstruction of the image x passed to
         the encoder above OR sampled from p(z).
         """
-        x = self.unflatten(self.fc3(self.lkrelu(self.bn3(self.fc2(z)))))
-        conv3 = self.conv3(x)
-        x = self.relu(conv3)
-        conv4 = self.conv4(x)
-        x_hat = self.sigmoid(conv4)
+        x = self.dec_fc2(self.dec_bn1(self.dec_fc1(z)))
+        x = self.relu(x)
+        x = self.unflatten(x)
 
-        return x_hat, conv3, conv4
+        conv1 = self.dec_conv1(x)
+        x = self.relu(conv1)
+        x = self.dec_conv2(x)
+        conv2 = self.dec_conv3(x)
+        x = self.dec_conv4(conv2)
+        x_hat = self.sigmoid(x)
+
+        return x_hat, conv1, conv2
 
     def forward(self, x):
         """
