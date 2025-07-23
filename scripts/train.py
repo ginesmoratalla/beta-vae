@@ -33,8 +33,7 @@ model = VariationalAutoEncoder(
     flat_dim_tuple=IMAGE_FLAT_DIM
 ).to(device)
 train_loader, val_loader = get_celeba_loaders(batch_size=BATCH_SIZE) 
-# loss_fn = nn.BCELoss(reduction="sum")
-loss_fn = nn.MSELoss(reduction="sum")
+loss_fn = nn.BCELoss(reduction="sum")
 optimizer = optim.Adam(params=model.parameters(), lr=LR)
 
 # train_loader, val_loader = get_mnist_loaders(batch_size=BATCH_SIZE) 
@@ -152,8 +151,8 @@ def train_model(run_path):
         writer.add_scalar('Reconstruction loss std (per batch)', np.std(epoch_reconstruction_loss), epoch)
 
         # PCA(model, pca_batch, epoch=epoch, path=run_path)
-        # if epoch < NUM_EPOCHS / 2:
-        #    BETA += 0.3
+        if epoch < NUM_EPOCHS / 2:
+           BETA += 0.3
 
     writer.close()
     print("Model finished training.\nLoging metrics...")

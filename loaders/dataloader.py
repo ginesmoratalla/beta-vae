@@ -86,10 +86,6 @@ class CelebA(Dataset):
 def get_celeba_by_type(batch_size, property='Bald'):
     """
     dataset preparation
-
-    NOTE TO SELF: transforms.ToTensor also
-    normalizes the pixel values so they can
-    be displayed and so that sigmoid works
     """
     print("==" * 20)
     print("[DATA] Loading train dataset (CelebA)")
@@ -97,11 +93,10 @@ def get_celeba_by_type(batch_size, property='Bald'):
 
     root_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),'../',)
     df = pd.read_csv(os.path.join(root_path,'dataset/celeba/list_attr_celeba.csv'))
-    # df.drop(columns=['image_id'], inplace=True)
-    # df.reset_index(inplace=True)
 
-    matching_df = df.loc[df[property] == 1]
-    not_matching_df = df.loc[df[property] != 1]
+    properties_df = df.loc[:, property]
+    matching_df = properties_df[(properties_df[property] == 1).all(axis=1)]
+    not_matching_df = properties_df[(properties_df[property] == 0).all(axis=1)]
 
     celeba_path = os.path.join(DATASET_PATH, 'celeba')
     celeba_transforms = transforms.Compose([
