@@ -25,18 +25,18 @@
       Vanilla VAE
     </td>
     <td align="center">
-      <img src="res/vanilla_training_reconstruction.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
+      <img src="res/MNIST/vanilla_training_reconstruction.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
     </td>
     <td align="center">
-      <img src="res/vanilla_validation_reconstruction.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
+      <img src="res/MNIST/vanilla_validation_reconstruction.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
     </td>
     <td align="center">
-      <img src="res/vanilla_conv1_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
-      <img src="res/vanilla_conv2_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
+      <img src="res/MNIST/vanilla_conv1_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
+      <img src="res/MNIST/vanilla_conv2_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
     </td>
     <td align="center">
-      <img src="res/vanilla_conv3_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
-      <img src="res/vanilla_conv4_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
+      <img src="res/MNIST/vanilla_conv3_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
+      <img src="res/MNIST/vanilla_conv4_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
     </td>
   </tr>
 
@@ -44,18 +44,18 @@
     <td align="center">
       $\beta$-VAE (0.3 $\beta$ incremental)
     <td align="center">
-      <img src="res/beta_training_reconstruction.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
+      <img src="res/MNIST/beta_training_reconstruction.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
     </td>
     <td align="center">
-      <img src="res/beta_validation_reconstruction.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
+      <img src="res/MNIST/beta_validation_reconstruction.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
     </td>
     <td align="center">
-      <img src="res/beta_conv1_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
-      <img src="res/beta_conv2_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
+      <img src="res/MNIST/beta_conv1_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
+      <img src="res/MNIST/beta_conv2_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
     </td>
     <td align="center">
-      <img src="res/beta_conv3_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
-      <img src="res/beta_conv4_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
+      <img src="res/MNIST/beta_conv3_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
+      <img src="res/MNIST/beta_conv4_outputs.gif" alt="VAE Decoder Reconstruction" style="width:200px;height:200px;">
     </td>
   </tr>
 
@@ -85,10 +85,10 @@
       Vanilla VAE
     </td>
     <td align="center">
-      <img src="res/vanilla_samples.png" alt="Samples Vanilla" style="width:200px;height:200px;">
+      <img src="res/MNIST/vanilla_samples.png" alt="Samples Vanilla" style="width:200px;height:200px;">
     </td>
     <td align="center">
-      <img src="res/vanilla_samples_per_class.png" alt="Loss Vanilla" style="width:300px;height:300px;">
+      <img src="res/MNIST/vanilla_samples_per_class.png" alt="Loss Vanilla" style="width:300px;height:300px;">
     </td>
   </tr>
 
@@ -97,10 +97,10 @@
       $\beta$-VAE (0.3 $\beta$ incremental)
     </td>
     <td align="center">
-      <img src="res/beta_samples.png" alt="Samples Vanilla" style="width:200px;height:200px;">
+      <img src="res/MNIST/beta_samples.png" alt="Samples Vanilla" style="width:200px;height:200px;">
     </td>
     <td align="center">
-      <img src="res/beta_samples_per_class.png" alt="Loss Vanilla" style="width:300px;height:300px;">
+      <img src="res/MNIST/beta_samples_per_class.png" alt="Loss Vanilla" style="width:300px;height:300px;">
     </td>
   </tr>
 
@@ -109,10 +109,10 @@
       $\beta$-VAE (0.3 $\beta$ incremental +10 epochs)
     </td>
     <td align="center">
-      <img src="res/beta_1_third.png" alt="Samples Vanilla" style="width:200px;height:200px;">
+      <img src="res/MNIST/beta_1_third.png" alt="Samples Vanilla" style="width:200px;height:200px;">
     </td>
     <td align="center">
-      <img src="res/beta_1_third_samples_per_class.png" alt="Loss Vanilla" style="width:300px;height:300px;">
+      <img src="res/MNIST/beta_1_third_samples_per_class.png" alt="Loss Vanilla" style="width:300px;height:300px;">
     </td>
   </tr>
   
@@ -130,10 +130,10 @@
 
   <tr>
     <td align="center">
-      <img src="res/reconstruction_loss.png" alt="Reconstruction Vanilla" style="width:330px;height:200px;">
+      <img src="res/MNIST/reconstruction_loss.png" alt="Reconstruction Vanilla" style="width:330px;height:200px;">
     </td>
     <td align="center">
-      <img src="res/kl_div.png" alt="KL Vanilla" style="width:330px;height:200px;">
+      <img src="res/MNIST/kl_div.png" alt="KL Vanilla" style="width:330px;height:200px;">
     </td>
   </tr>
 </table>
@@ -149,16 +149,55 @@
   </tr>
   <tr>
     <td align="center">
-      <img src="res/number_transitions.gif" alt="Reconstruction Vanilla" style="width:330px;height:200px;">
+      <img src="res/MNIST/number_transitions.gif" alt="Reconstruction Vanilla" style="width:330px;height:200px;">
     </td>
     <td align="center">
-      <img src="res/pca.gif" alt="PCA Vanilla" style="width:300px;height:300px;">
+      <img src="res/MNIST/pca.gif" alt="PCA Vanilla" style="width:300px;height:300px;">
     </td>
   </tr>
 </table>
 
 <div style="  display: flex; justify-content: center; align-items: center;">
 </div>
+
+## Sampled Attribute Transitions (CelebA)
+
+<table>
+  <tr>
+    <td align="center">
+        Image sampling transition (Bald attribute)
+    </td>
+      <td align="center">
+        Image sampling transition (Gender attribute)
+      </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="res/CelebA/bald-transition.png" alt="Reconstruction Vanilla" style="width:330px;height:200px;">
+    </td>
+    <td align="center">
+      <img src="res/CelebA/gender-transition.png" alt="Reconstruction Vanilla" style="width:330px;height:200px;">
+    </td>
+  </tr>
+
+  <tr>
+    <td align="center">
+            Image sampling transition (Hair Colour attribute)
+    </td>
+    <td align="center">
+            Image sampling transition (Pale Skin attribute)
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="res/CelebA/hair-transition.png" alt="Reconstruction Vanilla" style="width:330px;height:200px;">
+    </td>
+    <td align="center">
+      <img src="res/CelebA/pale_skin-transition.png" alt="Reconstruction Vanilla" style="width:330px;height:200px;">
+    </td>
+  </tr>
+
+</table>
 
 ## Sources
 - Auto-Encoding Variational Bayes [Diederik P Kingma, Max Welling. 2013](https://arxiv.org/pdf/1312.6114)
