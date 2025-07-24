@@ -71,8 +71,7 @@
 <table>
   <tr>
       <td align="center">
-      </td>
-      <td align="center">
+      </td> <td align="center">
           Samples from Inference<br>$\mathbf{z} \sim \mathcal{N}(0, \boldsymbol{I})$
       </td>
       <td align="center">
@@ -161,6 +160,44 @@
 </div>
 
 ## Sampled Attribute Transitions (CelebA)
+
+
+<table>
+  <tr>
+      <td align="center">
+      </td>
+      <td align="center">
+            Decoder Reconstruction - Training Set
+      </td>
+      <td align="center">
+            Decoder Reconstruction - Validation Set
+      </td>
+  </tr>
+  <tr>
+    <td align="center">
+      $\beta$-VAE (0.3 $\beta$ incremental)<br>$\mathbf{z}\in\mathbb{R}^40$
+    </td>
+    <td align="center">
+      <img src="res/CelebA/training_40_dim.gif" alt="Samples Vanilla" style="width:200px;height:200px;">
+    </td>
+    <td align="center">
+      <img src="res/CelebA/validation_40.gif" alt="Loss Vanilla" style="width:300px;height:300px;">
+    </td>
+  </tr>
+
+  <tr>
+    <td align="center">
+      $\beta$-VAE (0.3 $\beta$ incremental)<br>$\mathbf{z}\in\mathbb{R}^200$
+    </td>
+    <td align="center">
+      <img src="res/CelebA/training_200_dim.gif" alt="Samples Vanilla" style="width:200px;height:200px;">
+    </td>
+    <td align="center">
+      <img src="res/CelebA/validation_200_dim.gif" alt="Loss Vanilla" style="width:300px;height:300px;">
+    </td>
+  </tr>
+</table>
+
 
 <table>
   <tr>
