@@ -198,18 +198,22 @@
   </tr>
 </table>
 
-<table>
-  <tr>
-    <td align="center">
+
+<div>
+  <table>
+    <tr>
+      <td align="center">
         Samples from Inference<br>$\mathbf{z} \sim \mathcal{N}(0, \boldsymbol{I})$
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="res/CelebA/normal-samples.png" alt="Reconstruction Vanilla" style="width:330px;height:550px;">
-    </td>
-  </tr>
-</table>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <img src="res/CelebA/normal-samples.png" alt="Reconstruction Vanilla" style="width:450px;height:550px;">
+      </td>
+    </tr>
+  </table>
+</div>
+
 
 <table>
   <tr>
